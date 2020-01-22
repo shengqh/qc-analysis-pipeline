@@ -52,6 +52,8 @@ workflow WholeGenomeSingleSampleQc {
     PapiSettings papi_settings
     File wgs_coverage_interval_list
 
+    GermlineSingleSampleReferences references
+
     File? haplotype_database_file
     Boolean provide_bam_output = false
     Boolean use_gatk3_haplotype_caller = true
