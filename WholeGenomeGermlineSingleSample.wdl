@@ -93,8 +93,8 @@ workflow WholeGenomeSingleSampleQc {
   # QC the sample raw WGS metrics (common thresholds)
   call QC.CollectRawWgsMetrics as CollectRawWgsMetrics {
     input:
-      input_bam = UnmappedBamToAlignedBam.output_bam,
-      input_bam_index = UnmappedBamToAlignedBam.output_bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       metrics_filename = sample_and_unmapped_bams.base_file_name + ".raw_wgs_metrics",
       ref_fasta = references.reference_fasta.ref_fasta,
       ref_fasta_index = references.reference_fasta.ref_fasta_index,
