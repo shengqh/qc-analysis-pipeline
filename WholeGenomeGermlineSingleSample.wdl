@@ -74,7 +74,7 @@ workflow WholeGenomeSingleSampleQc {
       fingerprint_genotypes_index = fingerprint_genotypes_index,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_indes
+      ref_fasta_index = ref_fasta_index,
       papi_settings = papi_settings
   }
 
