@@ -41,39 +41,40 @@ version 1.0
 # Git URL import
 import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/anvil-wgs-qc/tasks/AggregatedBamQC.wdl" as AggregatedQC
 import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/anvil-wgs-qc/tasks/Qc.wdl" as QC
-import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/anvil-wgs-qc/structs/GermlineStructs.wdl"
 
 # WORKFLOW DEFINITION
 workflow WholeGenomeSingleSampleQc {
   input {
     File input_bam
     File input_bam_index
-    SampleAndUnmappedBams sample_and_unmapped_bams
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
+    String sample_name
     PapiSettings papi_settings
     File wgs_coverage_interval_list
 
-    GermlineSingleSampleReferences references
-
     File? haplotype_database_file
-    Boolean provide_bam_output = false
-    Boolean use_gatk3_haplotype_caller = true
+    File? fingerprint_genotypes_file
+    File? fingerprint_genotypes_index
   }
 
   # Not overridable:
   Int read_length = 250
-  Float lod_threshold = -20.0
   String cross_check_fingerprints_by = "READGROUP"
-  String recalibrated_bam_basename = sample_and_unmapped_bams.base_file_name + ".aligned.duplicates_marked.recalibrated"
 
   call AggregatedQC.AggregatedBamQC {
     input:
       base_recalibrated_bam = input_bam,
       base_recalibrated_bam_index = input_bam_index,
-      base_name = sample_and_unmapped_bams.base_file_name,
-      sample_name = sample_and_unmapped_bams.sample_name,
-      recalibrated_bam_base_name = recalibrated_bam_basename,
+      base_name = sample_name,
+      sample_name = sample_name,
       haplotype_database_file = haplotype_database_file,
-      references = references,
+      fingerprint_genotypes_file = fingerprint_genotypes_file,
+      fingerprint_genotypes_index = fingerprint_genotypes_index,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_indes
       papi_settings = papi_settings
   }
 
@@ -82,9 +83,9 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam,
-      metrics_filename = sample_and_unmapped_bams.base_file_name + ".wgs_metrics",
-      ref_fasta = references.reference_fasta.ref_fasta,
-      ref_fasta_index = references.reference_fasta.ref_fasta_index,
+      metrics_filename = sample_name + ".wgs_metrics",
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
       wgs_coverage_interval_list = wgs_coverage_interval_list,
       read_length = read_length,
       preemptible_tries = papi_settings.agg_preemptible_tries
@@ -95,9 +96,9 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam_index,
-      metrics_filename = sample_and_unmapped_bams.base_file_name + ".raw_wgs_metrics",
-      ref_fasta = references.reference_fasta.ref_fasta,
-      ref_fasta_index = references.reference_fasta.ref_fasta_index,
+      metrics_filename = sample_name + ".raw_wgs_metrics",
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
       wgs_coverage_interval_list = wgs_coverage_interval_list,
       read_length = read_length,
       preemptible_tries = papi_settings.agg_preemptible_tries
