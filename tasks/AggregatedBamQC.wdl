@@ -63,7 +63,7 @@ input {
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
-  if (defined(haplotype_database_file) && defined(references.fingerprint_genotypes_file)) {
+  if (defined(haplotype_database_file) && defined(fingerprint_genotypes_file)) {
     # Check the sample BAM fingerprint against the sample array
     call QC.CheckFingerprint as CheckFingerprint {
       input:
