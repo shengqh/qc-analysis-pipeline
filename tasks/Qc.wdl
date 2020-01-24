@@ -3,8 +3,7 @@ version 1.0
 ## Copyright Broad Institute, 2018
 ##
 ## This WDL defines tasks used for QC of human whole-genome or exome sequencing data.
-##
-## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
+## ## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
 ## For program versions, see docker containers.
 ##
 ## LICENSING :
@@ -626,7 +625,7 @@ task CollectDuplicateMetrics {
   command {
     java -Xms5000m -jar /usr/picard/picard.jar \
       CollectDuplicateMetrics \
-      METRICS_FILE=~{output_bam_prefix} + ".duplication_metrics" \
+      METRICS_FILE=~{output_bam_prefix}.duplication_metrics \
       INPUT=~{input_bam} \
       ASSUME_SORTED=true \
       REFERENCE_SEQUENCE=~{ref_fasta}
