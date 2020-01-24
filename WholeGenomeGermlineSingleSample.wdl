@@ -39,8 +39,8 @@ version 1.0
 #import "../../../../structs/dna_seq/germline/GermlineStructs.wdl"
 
 # Git URL import
-import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/initial-removal/tasks/AggregatedBamQC.wdl" as AggregatedQC
-import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/initial-removal/tasks/Qc.wdl" as QC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/initial-removal/tasks/AggregatedBamQC.wdl" as AggregatedQC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/initial-removal/tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
 workflow WholeGenomeSingleSampleQc {
