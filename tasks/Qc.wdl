@@ -178,7 +178,7 @@ task CollectAggregationMetrics {
       METRIC_ACCUMULATION_LEVEL=LIBRARY
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     memory: "7 GiB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
