@@ -168,6 +168,7 @@ task CollectAggregationMetrics {
       ASSUME_SORTED=true \
       PROGRAM=null \
       PROGRAM=CollectAlignmentSummaryMetrics \
+      PROGRAM=CollectDuplicateMetrics \
       PROGRAM=CollectInsertSizeMetrics \
       PROGRAM=CollectSequencingArtifactMetrics \
       PROGRAM=QualityScoreDistribution \
