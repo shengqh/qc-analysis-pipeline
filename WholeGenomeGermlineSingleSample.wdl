@@ -104,6 +104,16 @@ workflow WholeGenomeSingleSampleQc {
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
+  call QC.CollectDuplicateMetrics {
+    input:
+      input_bam = input_bam,
+      output_bam_prefix = sample_name,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      preemptible_tries = papi_settings.agg_preemptible_tries
+  }
+
   # Outputs that will be retained when execution is complete
   output {
 
@@ -127,6 +137,8 @@ workflow WholeGenomeSingleSampleQc {
     File agg_quality_distribution_pdf = AggregatedBamQC.agg_quality_distribution_pdf
     File agg_quality_distribution_metrics = AggregatedBamQC.agg_quality_distribution_metrics
     File agg_error_summary_metrics = AggregatedBamQC.agg_error_summary_metrics
+
+    File duplication_metrics = CollectDuplicateMetrics.duplication_metrics
 
     File? fingerprint_summary_metrics = AggregatedBamQC.fingerprint_summary_metrics
     File? fingerprint_detail_metrics = AggregatedBamQC.fingerprint_detail_metrics

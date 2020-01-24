@@ -168,7 +168,6 @@ task CollectAggregationMetrics {
       ASSUME_SORTED=true \
       PROGRAM=null \
       PROGRAM=CollectAlignmentSummaryMetrics \
-      PROGRAM=CollectDuplicateMetrics \
       PROGRAM=CollectInsertSizeMetrics \
       PROGRAM=CollectSequencingArtifactMetrics \
       PROGRAM=QualityScoreDistribution \
@@ -606,5 +605,39 @@ task CollectVariantCallingMetrics {
   output {
     File summary_metrics = "~{metrics_basename}.variant_calling_summary_metrics"
     File detail_metrics = "~{metrics_basename}.variant_calling_detail_metrics"
+  }
+}
+
+
+# Collect duplicate metrics
+task CollectDuplicateMetrics {
+  input {
+    File input_bam
+    String output_bam_prefix
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
+    Int preemptible_tries
+  }
+
+  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
+  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
+
+  command {
+    java -Xms5000m -jar /usr/picard/picard.jar \
+      CollectDuplicateMetrics \
+      METRICS_FILE=~{output_bam_prefix} + ".duplication_metrics" \
+      INPUT=~{input_bam} \
+      ASSUME_SORTED=true \
+      REFERENCE_SEQUENCE=~{ref_fasta}
+  }
+  runtime {
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    memory: "7 GiB"
+    disks: "local-disk " + disk_size + " HDD"
+    preemptible: preemptible_tries
+  }
+  output {
+    File duplication_metrics = "~{output_bam_prefix}.duplication_metrics"
   }
 }
