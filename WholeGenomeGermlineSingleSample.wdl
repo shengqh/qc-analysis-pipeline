@@ -104,7 +104,7 @@ workflow WholeGenomeSingleSampleQc {
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
-  call QC.CollectDuplicateMetrics {
+  call QC.CollectDuplicateMetrics as CollectDuplicateMetrics {
     input:
       input_bam = input_bam,
       output_bam_prefix = sample_name,
