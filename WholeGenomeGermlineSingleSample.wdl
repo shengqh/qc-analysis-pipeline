@@ -39,8 +39,9 @@ version 1.0
 #import "../../../../structs/dna_seq/germline/GermlineStructs.wdl"
 
 # Git URL import
-import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/initial-removal/tasks/AggregatedBamQC.wdl" as AggregatedQC
-import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/initial-removal/tasks/Qc.wdl" as QC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/AggregatedBamQC.wdl" as AggregatedQC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/Qc.wdl" as QC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/BamProcessing.wdl" as Processing
 
 # WORKFLOW DEFINITION
 workflow WholeGenomeSingleSampleQc {
@@ -53,6 +54,9 @@ workflow WholeGenomeSingleSampleQc {
     String sample_name
     PapiSettings papi_settings
     File wgs_coverage_interval_list
+    File contamination_sites_ud
+    File contamination_sites_bed
+    File contamination_sites_mu
 
     File? haplotype_database_file
     File? fingerprint_genotypes_file
@@ -104,6 +108,22 @@ workflow WholeGenomeSingleSampleQc {
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
+  # Estimate level of cross-sample contamination
+   call Processing.CheckContamination as CheckContamination {
+     input:
+       input_bam = input_bam,
+       input_bam_index = input_bam_index,
+       contamination_sites_ud = contamination_sites_ud,
+       contamination_sites_bed = contamination_sites_bed,
+       contamination_sites_mu = contamination_sites_mu,
+       ref_fasta = ref_fasta,
+       ref_fasta_index = ref_fasta_index,
+       output_prefix = sample_name + ".verify_bam_id",
+       preemptible_tries = papi_settings.agg_preemptible_tries,
+       contamination_underestimation_factor = 0.75
+   }
+
+  # Calculate the duplication rate since MarkDuplicates was already performed
   call QC.CollectDuplicateMetrics as CollectDuplicateMetrics {
     input:
       input_bam = input_bam,
@@ -137,6 +157,9 @@ workflow WholeGenomeSingleSampleQc {
     File agg_quality_distribution_pdf = AggregatedBamQC.agg_quality_distribution_pdf
     File agg_quality_distribution_metrics = AggregatedBamQC.agg_quality_distribution_metrics
     File agg_error_summary_metrics = AggregatedBamQC.agg_error_summary_metrics
+
+    File selfSM = CheckContamination.selfSM
+    Float contamination = CheckContamination.contamination    
 
     File duplication_metrics = CollectDuplicateMetrics.duplication_metrics
 
