@@ -20,19 +20,22 @@ version 1.0
 #import "../structs/GermlineStructs.wdl"
 
 # Git URL import
-import "https://raw.githubusercontent.com/gatk-workflows/five-dollar-genome-analysis-pipeline/1.2.0/tasks/Qc.wdl" as QC
-import "https://raw.githubusercontent.com/gatk-workflows/five-dollar-genome-analysis-pipeline/1.2.0/structs/GermlineStructs.wdl"
+import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/initial-removal/tasks/Qc.wdl" as QC
+import "https://raw.githubusercontent.com/genome/five-dollar-genome-analysis-pipeline/initial-removal/structs/GermlineStructs.wdl"
 
 # WORKFLOW DEFINITION
 workflow AggregatedBamQC {
 input {
     File base_recalibrated_bam
     File base_recalibrated_bam_index
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
     String base_name
     String sample_name
-    String recalibrated_bam_base_name
     File? haplotype_database_file
-    GermlineSingleSampleReferences references
+    File? fingerprint_genotypes_file
+    File? fingerprint_genotypes_index
     PapiSettings papi_settings
   }
 
@@ -42,9 +45,9 @@ input {
       input_bam = base_recalibrated_bam,
       input_bam_index = base_recalibrated_bam_index,
       output_bam_prefix = base_name + ".readgroup",
-      ref_dict = references.reference_fasta.ref_dict,
-      ref_fasta = references.reference_fasta.ref_fasta,
-      ref_fasta_index = references.reference_fasta.ref_fasta_index,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
@@ -54,21 +57,21 @@ input {
       input_bam = base_recalibrated_bam,
       input_bam_index = base_recalibrated_bam_index,
       output_bam_prefix = base_name,
-      ref_dict = references.reference_fasta.ref_dict,
-      ref_fasta = references.reference_fasta.ref_fasta,
-      ref_fasta_index = references.reference_fasta.ref_fasta_index,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
-  if (defined(haplotype_database_file) && defined(references.fingerprint_genotypes_file)) {
+  if (defined(haplotype_database_file) && defined(fingerprint_genotypes_file)) {
     # Check the sample BAM fingerprint against the sample array
     call QC.CheckFingerprint as CheckFingerprint {
       input:
         input_bam = base_recalibrated_bam,
         input_bam_index = base_recalibrated_bam_index,
         haplotype_database_file = haplotype_database_file,
-        genotypes = references.fingerprint_genotypes_file,
-        genotypes_index = references.fingerprint_genotypes_index,
+        genotypes = fingerprint_genotypes_file,
+        genotypes_index = fingerprint_genotypes_index,
         output_basename = base_name,
         sample = sample_name,
         preemptible_tries = papi_settings.agg_preemptible_tries
@@ -80,7 +83,7 @@ input {
     input:
       input_bam = base_recalibrated_bam,
       input_bam_index = base_recalibrated_bam_index,
-      read_group_md5_filename = recalibrated_bam_base_name + ".bam.read_group_md5",
+      read_group_md5_filename = base_name + ".readgroup.md5",
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
 

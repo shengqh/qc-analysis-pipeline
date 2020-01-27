@@ -3,8 +3,7 @@ version 1.0
 ## Copyright Broad Institute, 2018
 ##
 ## This WDL defines tasks used for QC of human whole-genome or exome sequencing data.
-##
-## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
+## ## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
 ## For program versions, see docker containers.
 ##
 ## LICENSING :
@@ -160,7 +159,7 @@ task CollectAggregationMetrics {
       ~{output_bam_prefix}.insert_size_metrics \
       ~{output_bam_prefix}.insert_size_histogram.pdf
 
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms5000m -jar /usr/picard/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -177,7 +176,7 @@ task CollectAggregationMetrics {
       METRIC_ACCUMULATION_LEVEL=LIBRARY
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     memory: "7 GiB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
@@ -605,5 +604,39 @@ task CollectVariantCallingMetrics {
   output {
     File summary_metrics = "~{metrics_basename}.variant_calling_summary_metrics"
     File detail_metrics = "~{metrics_basename}.variant_calling_detail_metrics"
+  }
+}
+
+
+# Collect duplicate metrics
+task CollectDuplicateMetrics {
+  input {
+    File input_bam
+    String output_bam_prefix
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
+    Int preemptible_tries
+  }
+
+  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
+  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
+
+  command {
+    java -Xms5000m -jar /usr/picard/picard.jar \
+      CollectDuplicateMetrics \
+      METRICS_FILE=~{output_bam_prefix}.duplication_metrics \
+      INPUT=~{input_bam} \
+      ASSUME_SORTED=true \
+      REFERENCE_SEQUENCE=~{ref_fasta}
+  }
+  runtime {
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    memory: "7 GiB"
+    disks: "local-disk " + disk_size + " HDD"
+    preemptible: preemptible_tries
+  }
+  output {
+    File duplication_metrics = "~{output_bam_prefix}.duplication_metrics"
   }
 }
