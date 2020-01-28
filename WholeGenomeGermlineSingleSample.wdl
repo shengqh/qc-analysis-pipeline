@@ -28,16 +28,6 @@ version 1.0
 ## page at https://hub.docker.com/r/broadinstitute/genomes-in-the-cloud/ for detailed
 ## licensing information pertaining to the included programs.
 
-# Local import
-#import "../../../../pipelines/dna_seq/UnmappedBamToAlignedBam.wdl" as ToBam
-#import "../../../../tasks/AggregatedBamQC.wdl" as AggregatedQC
-#import "../../../../tasks/GermlineVariantDiscovery.wdl" as Calling
-#import "../../../../tasks/Qc.wdl" as QC
-#import "../../../../tasks/Utilities.wdl" as Utils
-#import "../../../../tasks/BamToCram.wdl" as ToCram
-#import "../../../../tasks/VariantCalling.wdl" as ToGvcf
-#import "../../../../structs/dna_seq/germline/GermlineStructs.wdl"
-
 # Git URL import
 import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/Qc.wdl" as QC
 
