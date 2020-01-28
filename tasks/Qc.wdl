@@ -226,7 +226,8 @@ task CollectWgsMetrics {
       READ_LENGTH=~{read_length}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    # Using older image due to: https://github.com/broadinstitute/picard/issues/1402
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.20.4"
     preemptible: preemptible_tries
     memory: "3 GiB"
     disks: "local-disk " + disk_size + " HDD"
@@ -269,7 +270,8 @@ task CollectRawWgsMetrics {
       READ_LENGTH=~{read_length}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    # Using older image due to: https://github.com/broadinstitute/picard/issues/1402
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.20.4"
     preemptible: preemptible_tries
     memory: "~{memory_size} GiB"
     disks: "local-disk " + disk_size + " HDD"
