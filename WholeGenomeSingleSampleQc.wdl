@@ -55,7 +55,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      ignore = ["MISSING_TAG_NM"},
+      ignore = ["MISSING_TAG_NM"],
       max_output = 1000000000,
       is_outlier_data = is_outlier_data,
       preemptible_tries = preemptible_tries
