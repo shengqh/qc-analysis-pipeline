@@ -479,7 +479,6 @@ task CollectVariantCallingMetrics {
   }
 }
 
-
 # Collect duplicate metrics
 task CollectDuplicateMetrics {
   input {
