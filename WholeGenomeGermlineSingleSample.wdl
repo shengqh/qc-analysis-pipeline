@@ -67,7 +67,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam_index,
-      output_bam_prefix = base_name,
+      base_name = base_name,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,

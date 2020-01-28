@@ -95,7 +95,7 @@ task CollectAggregationMetrics {
   input {
     File input_bam
     File input_bam_index
-    String output_bam_prefix
+    String base_name
     File ref_dict
     File ref_fasta
     File ref_fasta_index
@@ -108,17 +108,17 @@ task CollectAggregationMetrics {
 
   command {
     # These are optionally generated, but need to exist for Cromwell's sake
-    touch ~{output_bam_prefix}.gc_bias.detail_metrics \
-      ~{output_bam_prefix}.gc_bias.pdf \
-      ~{output_bam_prefix}.gc_bias.summary_metrics \
-      ~{output_bam_prefix}.insert_size_metrics \
-      ~{output_bam_prefix}.insert_size_histogram.pdf
+    touch ~{base_name}.gc_bias.detail_metrics \
+      ~{base_name}.gc_bias.pdf \
+      ~{base_name}.gc_bias.summary_metrics \
+      ~{base_name}.insert_size_metrics \
+      ~{base_name}.insert_size_histogram.pdf
 
     java -Xms5000m -jar /usr/picard/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
-      OUTPUT=~{output_bam_prefix} \
+      OUTPUT=~{base_name} \
       ASSUME_SORTED=true \
       PROGRAM=null \
       PROGRAM=CollectAlignmentSummaryMetrics \
@@ -137,19 +137,19 @@ task CollectAggregationMetrics {
     preemptible: preemptible_tries
   }
   output {
-    File alignment_summary_metrics = "~{output_bam_prefix}.alignment_summary_metrics"
-    File bait_bias_detail_metrics = "~{output_bam_prefix}.bait_bias_detail_metrics"
-    File bait_bias_summary_metrics = "~{output_bam_prefix}.bait_bias_summary_metrics"
-    File gc_bias_detail_metrics = "~{output_bam_prefix}.gc_bias.detail_metrics"
-    File gc_bias_pdf = "~{output_bam_prefix}.gc_bias.pdf"
-    File gc_bias_summary_metrics = "~{output_bam_prefix}.gc_bias.summary_metrics"
-    File insert_size_histogram_pdf = "~{output_bam_prefix}.insert_size_histogram.pdf"
-    File insert_size_metrics = "~{output_bam_prefix}.insert_size_metrics"
-    File pre_adapter_detail_metrics = "~{output_bam_prefix}.pre_adapter_detail_metrics"
-    File pre_adapter_summary_metrics = "~{output_bam_prefix}.pre_adapter_summary_metrics"
-    File quality_distribution_pdf = "~{output_bam_prefix}.quality_distribution.pdf"
-    File quality_distribution_metrics = "~{output_bam_prefix}.quality_distribution_metrics"
-    File error_summary_metrics = "~{output_bam_prefix}.error_summary_metrics"
+    File alignment_summary_metrics = "~{base_name}.alignment_summary_metrics"
+    File bait_bias_detail_metrics = "~{base_name}.bait_bias_detail_metrics"
+    File bait_bias_summary_metrics = "~{base_name}.bait_bias_summary_metrics"
+    File gc_bias_detail_metrics = "~{base_name}.gc_bias.detail_metrics"
+    File gc_bias_pdf = "~{base_name}.gc_bias.pdf"
+    File gc_bias_summary_metrics = "~{base_name}.gc_bias.summary_metrics"
+    File insert_size_histogram_pdf = "~{base_name}.insert_size_histogram.pdf"
+    File insert_size_metrics = "~{base_name}.insert_size_metrics"
+    File pre_adapter_detail_metrics = "~{base_name}.pre_adapter_detail_metrics"
+    File pre_adapter_summary_metrics = "~{base_name}.pre_adapter_summary_metrics"
+    File quality_distribution_pdf = "~{base_name}.quality_distribution.pdf"
+    File quality_distribution_metrics = "~{base_name}.quality_distribution_metrics"
+    File error_summary_metrics = "~{base_name}.error_summary_metrics"
   }
 }
 
