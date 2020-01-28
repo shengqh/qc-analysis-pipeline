@@ -3,8 +3,7 @@ version 1.0
 ## Copyright Broad Institute, 2018
 ##
 ## This WDL defines tasks used for QC of human whole-genome or exome sequencing data.
-##
-## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
+## ## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
 ## For program versions, see docker containers.
 ##
 ## LICENSING :
@@ -26,14 +25,14 @@ task CollectQualityYieldMetrics {
   Int disk_size = ceil(size(input_bam, "GiB")) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xms2000m -jar /usr/picard/picard.jar \
       CollectQualityYieldMetrics \
       INPUT=~{input_bam} \
       OQ=true \
       OUTPUT=~{metrics_filename}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     disks: "local-disk " + disk_size + " HDD"
     memory: "3 GiB"
     preemptible: preemptible_tries
@@ -43,57 +42,12 @@ task CollectQualityYieldMetrics {
   }
 }
 
-# Collect base quality and insert size metrics
-task CollectUnsortedReadgroupBamQualityMetrics {
-  input {
-    File input_bam
-    String output_bam_prefix
-    Int preemptible_tries
-  }
-
-  Int disk_size = ceil(size(input_bam, "GiB")) + 20
-
-  command {
-    java -Xms5000m -jar /usr/gitc/picard.jar \
-      CollectMultipleMetrics \
-      INPUT=~{input_bam} \
-      OUTPUT=~{output_bam_prefix} \
-      ASSUME_SORTED=true \
-      PROGRAM=null \
-      PROGRAM=CollectBaseDistributionByCycle \
-      PROGRAM=CollectInsertSizeMetrics \
-      PROGRAM=MeanQualityByCycle \
-      PROGRAM=QualityScoreDistribution \
-      METRIC_ACCUMULATION_LEVEL=null \
-      METRIC_ACCUMULATION_LEVEL=ALL_READS
-
-    touch ~{output_bam_prefix}.insert_size_metrics
-    touch ~{output_bam_prefix}.insert_size_histogram.pdf
-  }
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    memory: "7 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-    preemptible: preemptible_tries
-  }
-  output {
-    File base_distribution_by_cycle_pdf = "~{output_bam_prefix}.base_distribution_by_cycle.pdf"
-    File base_distribution_by_cycle_metrics = "~{output_bam_prefix}.base_distribution_by_cycle_metrics"
-    File insert_size_histogram_pdf = "~{output_bam_prefix}.insert_size_histogram.pdf"
-    File insert_size_metrics = "~{output_bam_prefix}.insert_size_metrics"
-    File quality_by_cycle_pdf = "~{output_bam_prefix}.quality_by_cycle.pdf"
-    File quality_by_cycle_metrics = "~{output_bam_prefix}.quality_by_cycle_metrics"
-    File quality_distribution_pdf = "~{output_bam_prefix}.quality_distribution.pdf"
-    File quality_distribution_metrics = "~{output_bam_prefix}.quality_distribution_metrics"
-  }
-}
-
 # Collect alignment summary and GC bias quality metrics
 task CollectReadgroupBamQualityMetrics {
   input {
     File input_bam
     File input_bam_index
-    String output_bam_prefix
+    String base_name
     File ref_dict
     File ref_fasta
     File ref_fasta_index
@@ -106,15 +60,15 @@ task CollectReadgroupBamQualityMetrics {
 
   command {
     # These are optionally generated, but need to exist for Cromwell's sake
-    touch ~{output_bam_prefix}.gc_bias.detail_metrics \
-      ~{output_bam_prefix}.gc_bias.pdf \
-      ~{output_bam_prefix}.gc_bias.summary_metrics
+    touch ~{base_name}.gc_bias.detail_metrics \
+      ~{base_name}.gc_bias.pdf \
+      ~{base_name}.gc_bias.summary_metrics
 
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms5000m -jar /usr/picard/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
-      OUTPUT=~{output_bam_prefix} \
+      OUTPUT=~{base_name} \
       ASSUME_SORTED=true \
       PROGRAM=null \
       PROGRAM=CollectAlignmentSummaryMetrics \
@@ -123,16 +77,16 @@ task CollectReadgroupBamQualityMetrics {
       METRIC_ACCUMULATION_LEVEL=READ_GROUP
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     memory: "7 GiB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
   }
   output {
-    File alignment_summary_metrics = "~{output_bam_prefix}.alignment_summary_metrics"
-    File gc_bias_detail_metrics = "~{output_bam_prefix}.gc_bias.detail_metrics"
-    File gc_bias_pdf = "~{output_bam_prefix}.gc_bias.pdf"
-    File gc_bias_summary_metrics = "~{output_bam_prefix}.gc_bias.summary_metrics"
+    File alignment_summary_metrics = "~{base_name}.alignment_summary_metrics"
+    File gc_bias_detail_metrics = "~{base_name}.gc_bias.detail_metrics"
+    File gc_bias_pdf = "~{base_name}.gc_bias.pdf"
+    File gc_bias_summary_metrics = "~{base_name}.gc_bias.summary_metrics"
   }
 }
 
@@ -141,7 +95,7 @@ task CollectAggregationMetrics {
   input {
     File input_bam
     File input_bam_index
-    String output_bam_prefix
+    String base_name
     File ref_dict
     File ref_fasta
     File ref_fasta_index
@@ -154,17 +108,17 @@ task CollectAggregationMetrics {
 
   command {
     # These are optionally generated, but need to exist for Cromwell's sake
-    touch ~{output_bam_prefix}.gc_bias.detail_metrics \
-      ~{output_bam_prefix}.gc_bias.pdf \
-      ~{output_bam_prefix}.gc_bias.summary_metrics \
-      ~{output_bam_prefix}.insert_size_metrics \
-      ~{output_bam_prefix}.insert_size_histogram.pdf
+    touch ~{base_name}.gc_bias.detail_metrics \
+      ~{base_name}.gc_bias.pdf \
+      ~{base_name}.gc_bias.summary_metrics \
+      ~{base_name}.insert_size_metrics \
+      ~{base_name}.insert_size_histogram.pdf
 
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms5000m -jar /usr/picard/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
-      OUTPUT=~{output_bam_prefix} \
+      OUTPUT=~{base_name} \
       ASSUME_SORTED=true \
       PROGRAM=null \
       PROGRAM=CollectAlignmentSummaryMetrics \
@@ -177,157 +131,25 @@ task CollectAggregationMetrics {
       METRIC_ACCUMULATION_LEVEL=LIBRARY
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     memory: "7 GiB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
   }
   output {
-    File alignment_summary_metrics = "~{output_bam_prefix}.alignment_summary_metrics"
-    File bait_bias_detail_metrics = "~{output_bam_prefix}.bait_bias_detail_metrics"
-    File bait_bias_summary_metrics = "~{output_bam_prefix}.bait_bias_summary_metrics"
-    File gc_bias_detail_metrics = "~{output_bam_prefix}.gc_bias.detail_metrics"
-    File gc_bias_pdf = "~{output_bam_prefix}.gc_bias.pdf"
-    File gc_bias_summary_metrics = "~{output_bam_prefix}.gc_bias.summary_metrics"
-    File insert_size_histogram_pdf = "~{output_bam_prefix}.insert_size_histogram.pdf"
-    File insert_size_metrics = "~{output_bam_prefix}.insert_size_metrics"
-    File pre_adapter_detail_metrics = "~{output_bam_prefix}.pre_adapter_detail_metrics"
-    File pre_adapter_summary_metrics = "~{output_bam_prefix}.pre_adapter_summary_metrics"
-    File quality_distribution_pdf = "~{output_bam_prefix}.quality_distribution.pdf"
-    File quality_distribution_metrics = "~{output_bam_prefix}.quality_distribution_metrics"
-    File error_summary_metrics = "~{output_bam_prefix}.error_summary_metrics"
-  }
-}
-
-# Check that the fingerprints of separate readgroups all match
-task CrossCheckFingerprints {
-  input {
-    Array[File] input_bams
-    Array[File] input_bam_indexes
-    File? haplotype_database_file
-    String metrics_filename
-    Float total_input_size
-    Int preemptible_tries
-    Float lod_threshold
-    String cross_check_by
-  }
-
-  Int disk_size = ceil(total_input_size) + 20
-
-  command <<<
-    java -Dsamjdk.buffer_size=131072 \
-      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xms2000m \
-      -jar /usr/gitc/picard.jar \
-      CrosscheckFingerprints \
-      OUTPUT=~{metrics_filename} \
-      HAPLOTYPE_MAP=~{haplotype_database_file} \
-      EXPECT_ALL_GROUPS_TO_MATCH=true \
-      INPUT=~{sep=' INPUT=' input_bams} \
-      LOD_THRESHOLD=~{lod_threshold} \
-      CROSSCHECK_BY=~{cross_check_by}
-  >>>
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    preemptible: preemptible_tries
-    memory: "2 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-  }
-  output {
-    File cross_check_fingerprints_metrics = "~{metrics_filename}"
-  }
-}
-
-# Check that the fingerprint of the sample BAM matches the sample array
-task CheckFingerprint {
-  input {
-    File input_bam
-    File input_bam_index
-    String output_basename
-    File? haplotype_database_file
-    File? genotypes
-    File? genotypes_index
-    String sample
-    Int preemptible_tries
-  }
-
-  Int disk_size = ceil(size(input_bam, "GiB")) + 20
-  # Picard has different behavior depending on whether or not the OUTPUT parameter ends with a '.', so we are explicitly
-  #   passing in where we want the two metrics files to go to avoid any potential confusion.
-  String summary_metrics_location = "~{output_basename}.fingerprinting_summary_metrics"
-  String detail_metrics_location = "~{output_basename}.fingerprinting_detail_metrics"
-
-  command <<<
-    java -Dsamjdk.buffer_size=131072 \
-      -XX:GCTimeLimit=50 -XX:GCHeapFreeLimit=10 -Xms2g  \
-      -jar /usr/gitc/picard.jar \
-      CheckFingerprint \
-      INPUT=~{input_bam} \
-      SUMMARY_OUTPUT=~{summary_metrics_location} \
-      DETAIL_OUTPUT=~{detail_metrics_location} \
-      GENOTYPES=~{genotypes} \
-      HAPLOTYPE_MAP=~{haplotype_database_file} \
-      SAMPLE_ALIAS="~{sample}" \
-      IGNORE_READ_GROUPS=true
-
-  >>>
- runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    preemptible: preemptible_tries
-    memory: "3 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-  }
-  output {
-    File summary_metrics = summary_metrics_location
-    File detail_metrics = detail_metrics_location
-  }
-}
-
-task CheckPreValidation {
-  input {
-    File duplication_metrics
-    File chimerism_metrics
-    Float max_duplication_in_reasonable_sample
-    Float max_chimerism_in_reasonable_sample
-    Int preemptible_tries
-  }
-  
-  command <<<
-    set -o pipefail
-    set -e
-
-    grep -A 1 PERCENT_DUPLICATION ~{duplication_metrics} > duplication.csv
-    grep -A 3 PCT_CHIMERAS ~{chimerism_metrics} | grep -v OF_PAIR > chimerism.csv
-
-    python <<CODE
-
-    import csv
-    with open('duplication.csv') as dupfile:
-      reader = csv.DictReader(dupfile, delimiter='\t')
-      for row in reader:
-        with open("duplication_value.txt","w") as file:
-          file.write(row['PERCENT_DUPLICATION'])
-          file.close()
-
-    with open('chimerism.csv') as chimfile:
-      reader = csv.DictReader(chimfile, delimiter='\t')
-      for row in reader:
-        with open("chimerism_value.txt","w") as file:
-          file.write(row['PCT_CHIMERAS'])
-          file.close()
-
-    CODE
-
-  >>>
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    preemptible: preemptible_tries
-    docker: "us.gcr.io/broad-gotc-prod/python:2.7"
-    memory: "2 GiB"
-  }
-  output {
-    Float duplication_rate = read_float("duplication_value.txt")
-    Float chimerism_rate = read_float("chimerism_value.txt")
-    Boolean is_outlier_data = duplication_rate > max_duplication_in_reasonable_sample || chimerism_rate > max_chimerism_in_reasonable_sample
+    File alignment_summary_metrics = "~{base_name}.alignment_summary_metrics"
+    File bait_bias_detail_metrics = "~{base_name}.bait_bias_detail_metrics"
+    File bait_bias_summary_metrics = "~{base_name}.bait_bias_summary_metrics"
+    File gc_bias_detail_metrics = "~{base_name}.gc_bias.detail_metrics"
+    File gc_bias_pdf = "~{base_name}.gc_bias.pdf"
+    File gc_bias_summary_metrics = "~{base_name}.gc_bias.summary_metrics"
+    File insert_size_histogram_pdf = "~{base_name}.insert_size_histogram.pdf"
+    File insert_size_metrics = "~{base_name}.insert_size_metrics"
+    File pre_adapter_detail_metrics = "~{base_name}.pre_adapter_detail_metrics"
+    File pre_adapter_summary_metrics = "~{base_name}.pre_adapter_summary_metrics"
+    File quality_distribution_pdf = "~{base_name}.quality_distribution.pdf"
+    File quality_distribution_metrics = "~{base_name}.quality_distribution_metrics"
+    File error_summary_metrics = "~{base_name}.error_summary_metrics"
   }
 }
 
@@ -353,7 +175,7 @@ task ValidateSamFile {
   Int java_memory_size = (memory_size - 1) * 1000
 
   command {
-    java -Xms~{java_memory_size}m -jar /usr/gitc/picard.jar \
+    java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       ValidateSamFile \
       INPUT=~{input_bam} \
       OUTPUT=~{report_filename} \
@@ -365,7 +187,7 @@ task ValidateSamFile {
       IS_BISULFITE_SEQUENCED=false
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     preemptible: preemptible_tries
     memory: "~{memory_size} GiB"
     disks: "local-disk " + disk_size + " HDD"
@@ -392,7 +214,7 @@ task CollectWgsMetrics {
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xms2000m -jar /usr/picard/picard.jar \
       CollectWgsMetrics \
       INPUT=~{input_bam} \
       VALIDATION_STRINGENCY=SILENT \
@@ -404,7 +226,7 @@ task CollectWgsMetrics {
       READ_LENGTH=~{read_length}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     preemptible: preemptible_tries
     memory: "3 GiB"
     disks: "local-disk " + disk_size + " HDD"
@@ -435,7 +257,7 @@ task CollectRawWgsMetrics {
   String java_memory_size = (memory_size - 1) * 1000
 
   command {
-    java -Xms~{java_memory_size}m -jar /usr/gitc/picard.jar \
+    java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectRawWgsMetrics \
       INPUT=~{input_bam} \
       VALIDATION_STRINGENCY=SILENT \
@@ -447,7 +269,7 @@ task CollectRawWgsMetrics {
       READ_LENGTH=~{read_length}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     preemptible: preemptible_tries
     memory: "~{memory_size} GiB"
     disks: "local-disk " + disk_size + " HDD"
@@ -480,7 +302,7 @@ task CollectHsMetrics {
 
   # There are probably more metrics we want to generate with this tool
   command {
-    java -Xms~{java_memory_size}m -jar /usr/gitc/picard.jar \
+    java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectHsMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -494,7 +316,7 @@ task CollectHsMetrics {
   }
 
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     preemptible: preemptible_tries
     memory: "~{memory_size} GiB"
     disks: "local-disk " + disk_size + " HDD"
@@ -517,13 +339,13 @@ task CalculateReadGroupChecksum {
   Int disk_size = ceil(size(input_bam, "GiB")) + 20
 
   command {
-    java -Xms1000m -jar /usr/gitc/picard.jar \
+    java -Xms1000m -jar /usr/picard/picard.jar \
       CalculateReadGroupChecksum \
       INPUT=~{input_bam} \
       OUTPUT=~{read_group_md5_filename}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     preemptible: preemptible_tries
     memory: "2 GiB"
     disks: "local-disk " + disk_size + " HDD"
@@ -533,77 +355,118 @@ task CalculateReadGroupChecksum {
   }
 }
 
-# Validate a (g)VCF with -gvcf specific validation
-task ValidateVCF {
+# Collect duplicate metrics
+task CollectDuplicateMetrics {
   input {
-    File input_vcf
-    File input_vcf_index
+    File input_bam
+    String output_bam_prefix
+    File ref_dict
     File ref_fasta
     File ref_fasta_index
-    File ref_dict
-    File dbsnp_vcf
-    File dbsnp_vcf_index
-    File calling_interval_list
     Int preemptible_tries
-    Boolean is_gvcf = true
-    String gatk_docker = "us.gcr.io/broad-gatk/gatk:4.0.10.1"
   }
 
   Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
-  Int disk_size = ceil(size(input_vcf, "GiB") + size(dbsnp_vcf, "GiB") + ref_size) + 20
+  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
-    gatk --java-options -Xms6000m \
-      ValidateVariants \
-      -V ~{input_vcf} \
-      -R ~{ref_fasta} \
-      -L ~{calling_interval_list} \
-      ~{true="-gvcf" false="" is_gvcf} \
-      --validation-type-to-exclude ALLELES \
-      --dbsnp ~{dbsnp_vcf}
+    java -Xms5000m -jar /usr/picard/picard.jar \
+      CollectDuplicateMetrics \
+      METRICS_FILE=~{output_bam_prefix}.duplication_metrics \
+      INPUT=~{input_bam} \
+      ASSUME_SORTED=true \
+      REFERENCE_SEQUENCE=~{ref_fasta}
   }
   runtime {
-    docker: gatk_docker
-    preemptible: preemptible_tries
-    memory: "7000 MiB"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    memory: "7 GiB"
     disks: "local-disk " + disk_size + " HDD"
+    preemptible: preemptible_tries
+  }
+  output {
+    File duplication_metrics = "~{output_bam_prefix}.duplication_metrics"
   }
 }
 
-# Collect variant calling metrics from GVCF output
-task CollectVariantCallingMetrics {
+# Notes on the contamination estimate:
+# The contamination value is read from the FREEMIX field of the selfSM file output by verifyBamId
+#
+# In Zamboni production, this value is stored directly in METRICS.AGGREGATION_CONTAM
+#
+# Contamination is also stored in GVCF_CALLING and thereby passed to HAPLOTYPE_CALLER
+# But first, it is divided by an underestimation factor thusly:
+#   float(FREEMIX) / ContaminationUnderestimationFactor
+#     where the denominator is hardcoded in Zamboni:
+#     val ContaminationUnderestimationFactor = 0.75f
+#
+# Here, I am handling this by returning both the original selfSM file for reporting, and the adjusted
+# contamination estimate for use in variant calling
+task CheckContamination {
   input {
-    File input_vcf
-    File input_vcf_index
-    String metrics_basename
-    File dbsnp_vcf
-    File dbsnp_vcf_index
-    File ref_dict
-    File evaluation_interval_list
-    Boolean is_gvcf = true
+    File input_bam
+    File input_bam_index
+    File contamination_sites_ud
+    File contamination_sites_bed
+    File contamination_sites_mu
+    File ref_fasta
+    File ref_fasta_index
+    String output_prefix
     Int preemptible_tries
+    Float contamination_underestimation_factor
+    Boolean disable_sanity_check = false
   }
 
-  Int disk_size = ceil(size(input_vcf, "GiB") + size(dbsnp_vcf, "GiB")) + 20
+  Int disk_size = ceil(size(input_bam, "GiB") + size(ref_fasta, "GiB")) + 30
 
-  command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
-      CollectVariantCallingMetrics \
-      INPUT=~{input_vcf} \
-      OUTPUT=~{metrics_basename} \
-      DBSNP=~{dbsnp_vcf} \
-      SEQUENCE_DICTIONARY=~{ref_dict} \
-      TARGET_INTERVALS=~{evaluation_interval_list} \
-      ~{true="GVCF_INPUT=true" false="" is_gvcf}
-  }
+  command <<<
+    set -e
+
+    # creates a ~{output_prefix}.selfSM file, a TSV file with 2 rows, 19 columns.
+    # First row are the keys (e.g., SEQ_SM, RG, FREEMIX), second row are the associated values
+    /usr/gitc/VerifyBamID \
+    --Verbose \
+    --NumPC 4 \
+    --Output ~{output_prefix} \
+    --BamFile ~{input_bam} \
+    --Reference ~{ref_fasta} \
+    --UDPath ~{contamination_sites_ud} \
+    --MeanPath ~{contamination_sites_mu} \
+    --BedPath ~{contamination_sites_bed} \
+    ~{true="--DisableSanityCheck" false="" disable_sanity_check} \
+    1>/dev/null
+
+    # used to read from the selfSM file and calculate contamination, which gets printed out
+    python3 <<CODE
+    import csv
+    import sys
+    with open('~{output_prefix}.selfSM') as selfSM:
+      reader = csv.DictReader(selfSM, delimiter='\t')
+      i = 0
+      for row in reader:
+        if float(row["FREELK0"])==0 and float(row["FREELK1"])==0:
+          # a zero value for the likelihoods implies no data. This usually indicates a problem rather than a real event.
+          # if the bam isn't really empty, this is probably due to the use of a incompatible reference build between
+          # vcf and bam.
+          sys.stderr.write("Found zero likelihoods. Bam is either very-very shallow, or aligned to the wrong reference (relative to the vcf).")
+          sys.exit(1)
+        print(float(row["FREEMIX"])/~{contamination_underestimation_factor})
+        i = i + 1
+        # there should be exactly one row, and if this isn't the case the format of the output is unexpectedly different
+        # and the results are not reliable.
+        if i != 1:
+          sys.stderr.write("Found %d rows in .selfSM file. Was expecting exactly 1. This is an error"%(i))
+          sys.exit(2)
+    CODE
+  >>>
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
     preemptible: preemptible_tries
-    memory: "3 GiB"
+    memory: "4 GiB"
     disks: "local-disk " + disk_size + " HDD"
+    docker: "us.gcr.io/broad-gotc-prod/verify-bam-id:c1cba76e979904eb69c31520a0d7f5be63c72253-1553018888"
+    cpu: "2"
   }
   output {
-    File summary_metrics = "~{metrics_basename}.variant_calling_summary_metrics"
-    File detail_metrics = "~{metrics_basename}.variant_calling_detail_metrics"
+    File selfSM = "~{output_prefix}.selfSM"
+    Float contamination = read_float(stdout())
   }
 }
