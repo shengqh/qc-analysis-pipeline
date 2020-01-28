@@ -40,7 +40,7 @@ workflow WholeGenomeSingleSampleQc {
     File ref_fasta
     File ref_fasta_index
     String sample_name
-    PapiSettings papi_settings
+    Int preemptible_tries
     File wgs_coverage_interval_list
     File contamination_sites_ud
     File contamination_sites_bed
@@ -59,7 +59,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # QC the final BAM some more (no such thing as too much QC)
@@ -71,7 +71,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # Generate a checksum per readgroup in the final BAM
@@ -80,7 +80,7 @@ workflow WholeGenomeSingleSampleQc {
       input_bam = input_bam,
       input_bam_index = input_bam_index,
       read_group_md5_filename = sample_name + ".readgroup.md5",
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # QC the BAM sequence yield
@@ -88,7 +88,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       metrics_filename = sample_name + ".quality_yield_metrics",
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # QC the sample WGS metrics (stringent thresholds)
@@ -101,7 +101,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta_index = ref_fasta_index,
       wgs_coverage_interval_list = wgs_coverage_interval_list,
       read_length = read_length,
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # QC the sample raw WGS metrics (common thresholds)
@@ -114,7 +114,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta_index = ref_fasta_index,
       wgs_coverage_interval_list = wgs_coverage_interval_list,
       read_length = read_length,
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # Estimate level of cross-sample contamination
@@ -128,7 +128,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
       output_prefix = sample_name + ".verify_bam_id",
-      preemptible_tries = papi_settings.agg_preemptible_tries,
+      preemptible_tries = preemptible_tries,
       contamination_underestimation_factor = 0.75
   }
 
@@ -140,7 +140,7 @@ workflow WholeGenomeSingleSampleQc {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      preemptible_tries = papi_settings.agg_preemptible_tries
+      preemptible_tries = preemptible_tries
   }
 
   # Outputs that will be retained when execution is complete
