@@ -24,7 +24,7 @@ version 1.0
 ## - [VerifyBamID2](https://github.com/Griffan/VerifyBamID)
 
 # Git URL import
-import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/Qc.wdl" as QC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
 workflow WholeGenomeSingleSampleQc {
