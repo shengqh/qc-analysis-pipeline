@@ -42,51 +42,6 @@ task CollectQualityYieldMetrics {
   }
 }
 
-# Collect base quality and insert size metrics
-task CollectUnsortedReadgroupBamQualityMetrics {
-  input {
-    File input_bam
-    String output_bam_prefix
-    Int preemptible_tries
-  }
-
-  Int disk_size = ceil(size(input_bam, "GiB")) + 20
-
-  command {
-    java -Xms5000m -jar /usr/gitc/picard.jar \
-      CollectMultipleMetrics \
-      INPUT=~{input_bam} \
-      OUTPUT=~{output_bam_prefix} \
-      ASSUME_SORTED=true \
-      PROGRAM=null \
-      PROGRAM=CollectBaseDistributionByCycle \
-      PROGRAM=CollectInsertSizeMetrics \
-      PROGRAM=MeanQualityByCycle \
-      PROGRAM=QualityScoreDistribution \
-      METRIC_ACCUMULATION_LEVEL=null \
-      METRIC_ACCUMULATION_LEVEL=ALL_READS
-
-    touch ~{output_bam_prefix}.insert_size_metrics
-    touch ~{output_bam_prefix}.insert_size_histogram.pdf
-  }
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    memory: "7 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-    preemptible: preemptible_tries
-  }
-  output {
-    File base_distribution_by_cycle_pdf = "~{output_bam_prefix}.base_distribution_by_cycle.pdf"
-    File base_distribution_by_cycle_metrics = "~{output_bam_prefix}.base_distribution_by_cycle_metrics"
-    File insert_size_histogram_pdf = "~{output_bam_prefix}.insert_size_histogram.pdf"
-    File insert_size_metrics = "~{output_bam_prefix}.insert_size_metrics"
-    File quality_by_cycle_pdf = "~{output_bam_prefix}.quality_by_cycle.pdf"
-    File quality_by_cycle_metrics = "~{output_bam_prefix}.quality_by_cycle_metrics"
-    File quality_distribution_pdf = "~{output_bam_prefix}.quality_distribution.pdf"
-    File quality_distribution_metrics = "~{output_bam_prefix}.quality_distribution_metrics"
-  }
-}
-
 # Collect alignment summary and GC bias quality metrics
 task CollectReadgroupBamQualityMetrics {
   input {
