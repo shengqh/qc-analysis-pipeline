@@ -171,19 +171,19 @@ workflow WholeGenomeSingleSampleQc {
 
     File calculate_read_group_checksum_md5 = CalculateReadGroupChecksum.md5_file
 
-    File agg_alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
-    File agg_bait_bias_detail_metrics = CollectAggregationMetrics.bait_bias_detail_metrics
-    File agg_bait_bias_summary_metrics = CollectAggregationMetrics.bait_bias_summary_metrics
-    File agg_gc_bias_detail_metrics = CollectAggregationMetrics.gc_bias_detail_metrics
-    File agg_gc_bias_pdf = CollectAggregationMetrics.gc_bias_pdf
-    File agg_gc_bias_summary_metrics = CollectAggregationMetrics.gc_bias_summary_metrics
-    File agg_insert_size_histogram_pdf = CollectAggregationMetrics.insert_size_histogram_pdf
-    File agg_insert_size_metrics = CollectAggregationMetrics.insert_size_metrics
-    File agg_pre_adapter_detail_metrics = CollectAggregationMetrics.pre_adapter_detail_metrics
-    File agg_pre_adapter_summary_metrics = CollectAggregationMetrics.pre_adapter_summary_metrics
-    File agg_quality_distribution_pdf = CollectAggregationMetrics.quality_distribution_pdf
-    File agg_quality_distribution_metrics = CollectAggregationMetrics.quality_distribution_metrics
-    File agg_error_summary_metrics = CollectAggregationMetrics.error_summary_metrics
+    File alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
+    File bait_bias_detail_metrics = CollectAggregationMetrics.bait_bias_detail_metrics
+    File bait_bias_summary_metrics = CollectAggregationMetrics.bait_bias_summary_metrics
+    File gc_bias_detail_metrics = CollectAggregationMetrics.gc_bias_detail_metrics
+    File gc_bias_pdf = CollectAggregationMetrics.gc_bias_pdf
+    File gc_bias_summary_metrics = CollectAggregationMetrics.gc_bias_summary_metrics
+    File insert_size_histogram_pdf = CollectAggregationMetrics.insert_size_histogram_pdf
+    File insert_size_metrics = CollectAggregationMetrics.insert_size_metrics
+    File pre_adapter_detail_metrics = CollectAggregationMetrics.pre_adapter_detail_metrics
+    File pre_adapter_summary_metrics = CollectAggregationMetrics.pre_adapter_summary_metrics
+    File quality_distribution_pdf = CollectAggregationMetrics.quality_distribution_pdf
+    File quality_distribution_metrics = CollectAggregationMetrics.quality_distribution_metrics
+    File error_summary_metrics = CollectAggregationMetrics.error_summary_metrics
 
     File selfSM = CheckContamination.selfSM
     Float contamination = CheckContamination.contamination    
