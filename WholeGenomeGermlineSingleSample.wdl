@@ -81,6 +81,14 @@ workflow WholeGenomeSingleSampleQc {
       papi_settings = papi_settings
   }
 
+  # QC the BAM sequence yield
+  call QC.CollectQualityYieldMetrics as CollectQualityYieldMetrics {
+    input:
+      input_bam = input_bam,
+      metrics_filename = sample_name + ".quality_yield_metrics",
+      preemptible_tries = papi_settings.agg_preemptible_tries
+  }
+
   # QC the sample WGS metrics (stringent thresholds)
   call QC.CollectWgsMetrics as CollectWgsMetrics {
     input:
@@ -161,6 +169,8 @@ workflow WholeGenomeSingleSampleQc {
     Float contamination = CheckContamination.contamination    
 
     File duplication_metrics = CollectDuplicateMetrics.duplication_metrics
+
+    File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
 
     File? fingerprint_summary_metrics = AggregatedBamQC.fingerprint_summary_metrics
     File? fingerprint_detail_metrics = AggregatedBamQC.fingerprint_detail_metrics
