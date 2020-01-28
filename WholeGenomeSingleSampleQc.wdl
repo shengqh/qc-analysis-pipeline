@@ -98,6 +98,10 @@ workflow WholeGenomeSingleSampleQc {
   call QC.CollectQualityYieldMetrics as CollectQualityYieldMetrics {
     input:
       input_bam = input_bam,
+      input_bam_index = input_bam_index,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
       metrics_filename = base_name + ".quality_yield_metrics",
       preemptible_tries = preemptible_tries
   }
