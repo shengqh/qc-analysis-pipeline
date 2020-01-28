@@ -39,7 +39,6 @@ version 1.0
 #import "../../../../structs/dna_seq/germline/GermlineStructs.wdl"
 
 # Git URL import
-import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/AggregatedBamQC.wdl" as AggregatedQC
 import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
@@ -60,17 +59,38 @@ workflow WholeGenomeSingleSampleQc {
 
   # Not overridable:
   Int read_length = 250
-
-  call AggregatedQC.AggregatedBamQC {
+  
+  # QC the final BAM (consolidated after scattered BQSR)
+  call QC.CollectReadgroupBamQualityMetrics as CollectReadgroupBamQualityMetrics {
     input:
-      base_recalibrated_bam = input_bam,
-      base_recalibrated_bam_index = input_bam_index,
-      base_name = sample_name,
-      sample_name = sample_name,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
+      output_bam_prefix = sample_name + ".readgroup",
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      papi_settings = papi_settings
+      preemptible_tries = papi_settings.agg_preemptible_tries
+  }
+
+  # QC the final BAM some more (no such thing as too much QC)
+  call QC.CollectAggregationMetrics as CollectAggregationMetrics {
+    input:
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
+      output_bam_prefix = sample_name,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      preemptible_tries = papi_settings.agg_preemptible_tries
+  }
+
+  # Generate a checksum per readgroup in the final BAM
+  call QC.CalculateReadGroupChecksum as CalculateReadGroupChecksum {
+    input:
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
+      read_group_md5_filename = sample_name + ".readgroup.md5",
+      preemptible_tries = papi_settings.agg_preemptible_tries
   }
 
   # QC the BAM sequence yield
@@ -136,26 +156,26 @@ workflow WholeGenomeSingleSampleQc {
   # Outputs that will be retained when execution is complete
   output {
 
-    File read_group_alignment_summary_metrics = AggregatedBamQC.read_group_alignment_summary_metrics
-    File read_group_gc_bias_detail_metrics = AggregatedBamQC.read_group_gc_bias_detail_metrics
-    File read_group_gc_bias_pdf = AggregatedBamQC.read_group_gc_bias_pdf
-    File read_group_gc_bias_summary_metrics = AggregatedBamQC.read_group_gc_bias_summary_metrics
+    File read_group_alignment_summary_metrics = CollectReadgroupBamQualityMetrics.alignment_summary_metrics
+    File read_group_gc_bias_detail_metrics = CollectReadgroupBamQualityMetrics.gc_bias_detail_metrics
+    File read_group_gc_bias_pdf = CollectReadgroupBamQualityMetrics.gc_bias_pdf
+    File read_group_gc_bias_summary_metrics = CollectReadgroupBamQualityMetrics.gc_bias_summary_metrics
 
-    File calculate_read_group_checksum_md5 = AggregatedBamQC.calculate_read_group_checksum_md5
+    File calculate_read_group_checksum_md5 = CalculateReadGroupChecksum.md5_file
 
-    File agg_alignment_summary_metrics = AggregatedBamQC.agg_alignment_summary_metrics
-    File agg_bait_bias_detail_metrics = AggregatedBamQC.agg_bait_bias_detail_metrics
-    File agg_bait_bias_summary_metrics = AggregatedBamQC.agg_bait_bias_summary_metrics
-    File agg_gc_bias_detail_metrics = AggregatedBamQC.agg_gc_bias_detail_metrics
-    File agg_gc_bias_pdf = AggregatedBamQC.agg_gc_bias_pdf
-    File agg_gc_bias_summary_metrics = AggregatedBamQC.agg_gc_bias_summary_metrics
-    File agg_insert_size_histogram_pdf = AggregatedBamQC.agg_insert_size_histogram_pdf
-    File agg_insert_size_metrics = AggregatedBamQC.agg_insert_size_metrics
-    File agg_pre_adapter_detail_metrics = AggregatedBamQC.agg_pre_adapter_detail_metrics
-    File agg_pre_adapter_summary_metrics = AggregatedBamQC.agg_pre_adapter_summary_metrics
-    File agg_quality_distribution_pdf = AggregatedBamQC.agg_quality_distribution_pdf
-    File agg_quality_distribution_metrics = AggregatedBamQC.agg_quality_distribution_metrics
-    File agg_error_summary_metrics = AggregatedBamQC.agg_error_summary_metrics
+    File agg_alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
+    File agg_bait_bias_detail_metrics = CollectAggregationMetrics.bait_bias_detail_metrics
+    File agg_bait_bias_summary_metrics = CollectAggregationMetrics.bait_bias_summary_metrics
+    File agg_gc_bias_detail_metrics = CollectAggregationMetrics.gc_bias_detail_metrics
+    File agg_gc_bias_pdf = CollectAggregationMetrics.gc_bias_pdf
+    File agg_gc_bias_summary_metrics = CollectAggregationMetrics.gc_bias_summary_metrics
+    File agg_insert_size_histogram_pdf = CollectAggregationMetrics.insert_size_histogram_pdf
+    File agg_insert_size_metrics = CollectAggregationMetrics.insert_size_metrics
+    File agg_pre_adapter_detail_metrics = CollectAggregationMetrics.pre_adapter_detail_metrics
+    File agg_pre_adapter_summary_metrics = CollectAggregationMetrics.pre_adapter_summary_metrics
+    File agg_quality_distribution_pdf = CollectAggregationMetrics.quality_distribution_pdf
+    File agg_quality_distribution_metrics = CollectAggregationMetrics.quality_distribution_metrics
+    File agg_error_summary_metrics = CollectAggregationMetrics.error_summary_metrics
 
     File selfSM = CheckContamination.selfSM
     Float contamination = CheckContamination.contamination    
