@@ -56,15 +56,10 @@ workflow WholeGenomeSingleSampleQc {
     File contamination_sites_ud
     File contamination_sites_bed
     File contamination_sites_mu
-
-    File? haplotype_database_file
-    File? fingerprint_genotypes_file
-    File? fingerprint_genotypes_index
   }
 
   # Not overridable:
   Int read_length = 250
-  String cross_check_fingerprints_by = "READGROUP"
 
   call AggregatedQC.AggregatedBamQC {
     input:
@@ -72,9 +67,6 @@ workflow WholeGenomeSingleSampleQc {
       base_recalibrated_bam_index = input_bam_index,
       base_name = sample_name,
       sample_name = sample_name,
-      haplotype_database_file = haplotype_database_file,
-      fingerprint_genotypes_file = fingerprint_genotypes_file,
-      fingerprint_genotypes_index = fingerprint_genotypes_index,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
@@ -171,9 +163,6 @@ workflow WholeGenomeSingleSampleQc {
     File duplication_metrics = CollectDuplicateMetrics.duplication_metrics
 
     File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
-
-    File? fingerprint_summary_metrics = AggregatedBamQC.fingerprint_summary_metrics
-    File? fingerprint_detail_metrics = AggregatedBamQC.fingerprint_detail_metrics
 
     File wgs_metrics = CollectWgsMetrics.metrics
     File raw_wgs_metrics = CollectRawWgsMetrics.metrics

@@ -33,9 +33,6 @@ input {
     File ref_fasta_index
     String base_name
     String sample_name
-    File? haplotype_database_file
-    File? fingerprint_genotypes_file
-    File? fingerprint_genotypes_index
     PapiSettings papi_settings
   }
 
@@ -62,23 +59,8 @@ input {
       ref_fasta_index = ref_fasta_index,
       preemptible_tries = papi_settings.agg_preemptible_tries
   }
-
-  if (defined(haplotype_database_file) && defined(fingerprint_genotypes_file)) {
-    # Check the sample BAM fingerprint against the sample array
-    call QC.CheckFingerprint as CheckFingerprint {
-      input:
-        input_bam = base_recalibrated_bam,
-        input_bam_index = base_recalibrated_bam_index,
-        haplotype_database_file = haplotype_database_file,
-        genotypes = fingerprint_genotypes_file,
-        genotypes_index = fingerprint_genotypes_index,
-        output_basename = base_name,
-        sample = sample_name,
-        preemptible_tries = papi_settings.agg_preemptible_tries
-    }
-  }
-
-  # Generate a checksum per readgroup in the final BAM
+  
+# Generate a checksum per readgroup in the final BAM
   call QC.CalculateReadGroupChecksum as CalculateReadGroupChecksum {
     input:
       input_bam = base_recalibrated_bam,
@@ -108,8 +90,5 @@ input {
     File agg_quality_distribution_pdf = CollectAggregationMetrics.quality_distribution_pdf
     File agg_quality_distribution_metrics = CollectAggregationMetrics.quality_distribution_metrics
     File agg_error_summary_metrics = CollectAggregationMetrics.error_summary_metrics
-
-    File? fingerprint_summary_metrics = CheckFingerprint.summary_metrics
-    File? fingerprint_detail_metrics = CheckFingerprint.detail_metrics
   }
 }
