@@ -47,7 +47,7 @@ task CollectReadgroupBamQualityMetrics {
   input {
     File input_bam
     File input_bam_index
-    String output_bam_prefix
+    String base_name
     File ref_dict
     File ref_fasta
     File ref_fasta_index
@@ -60,15 +60,15 @@ task CollectReadgroupBamQualityMetrics {
 
   command {
     # These are optionally generated, but need to exist for Cromwell's sake
-    touch ~{output_bam_prefix}.gc_bias.detail_metrics \
-      ~{output_bam_prefix}.gc_bias.pdf \
-      ~{output_bam_prefix}.gc_bias.summary_metrics
+    touch ~{base_name}.gc_bias.detail_metrics \
+      ~{base_name}.gc_bias.pdf \
+      ~{base_name}.gc_bias.summary_metrics
 
     java -Xms5000m -jar /usr/gitc/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
-      OUTPUT=~{output_bam_prefix} \
+      OUTPUT=~{base_name} \
       ASSUME_SORTED=true \
       PROGRAM=null \
       PROGRAM=CollectAlignmentSummaryMetrics \
@@ -83,10 +83,10 @@ task CollectReadgroupBamQualityMetrics {
     preemptible: preemptible_tries
   }
   output {
-    File alignment_summary_metrics = "~{output_bam_prefix}.alignment_summary_metrics"
-    File gc_bias_detail_metrics = "~{output_bam_prefix}.gc_bias.detail_metrics"
-    File gc_bias_pdf = "~{output_bam_prefix}.gc_bias.pdf"
-    File gc_bias_summary_metrics = "~{output_bam_prefix}.gc_bias.summary_metrics"
+    File alignment_summary_metrics = "~{base_name}.alignment_summary_metrics"
+    File gc_bias_detail_metrics = "~{base_name}.gc_bias.detail_metrics"
+    File gc_bias_pdf = "~{base_name}.gc_bias.pdf"
+    File gc_bias_summary_metrics = "~{base_name}.gc_bias.summary_metrics"
   }
 }
 
