@@ -25,7 +25,7 @@ task CollectQualityYieldMetrics {
   Int disk_size = ceil(size(input_bam, "GiB")) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xms2000m -jar /usr/picard/picard.jar \
       CollectQualityYieldMetrics \
       INPUT=~{input_bam} \
       OQ=true \
@@ -64,7 +64,7 @@ task CollectReadgroupBamQualityMetrics {
       ~{base_name}.gc_bias.pdf \
       ~{base_name}.gc_bias.summary_metrics
 
-    java -Xms5000m -jar /usr/gitc/picard.jar \
+    java -Xms5000m -jar /usr/picard/picard.jar \
       CollectMultipleMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -175,7 +175,7 @@ task ValidateSamFile {
   Int java_memory_size = (memory_size - 1) * 1000
 
   command {
-    java -Xms~{java_memory_size}m -jar /usr/gitc/picard.jar \
+    java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       ValidateSamFile \
       INPUT=~{input_bam} \
       OUTPUT=~{report_filename} \
@@ -214,7 +214,7 @@ task CollectWgsMetrics {
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
+    java -Xms2000m -jar /usr/picard/picard.jar \
       CollectWgsMetrics \
       INPUT=~{input_bam} \
       VALIDATION_STRINGENCY=SILENT \
@@ -257,7 +257,7 @@ task CollectRawWgsMetrics {
   String java_memory_size = (memory_size - 1) * 1000
 
   command {
-    java -Xms~{java_memory_size}m -jar /usr/gitc/picard.jar \
+    java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectRawWgsMetrics \
       INPUT=~{input_bam} \
       VALIDATION_STRINGENCY=SILENT \
@@ -302,7 +302,7 @@ task CollectHsMetrics {
 
   # There are probably more metrics we want to generate with this tool
   command {
-    java -Xms~{java_memory_size}m -jar /usr/gitc/picard.jar \
+    java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectHsMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
@@ -339,7 +339,7 @@ task CalculateReadGroupChecksum {
   Int disk_size = ceil(size(input_bam, "GiB")) + 20
 
   command {
-    java -Xms1000m -jar /usr/gitc/picard.jar \
+    java -Xms1000m -jar /usr/picard/picard.jar \
       CalculateReadGroupChecksum \
       INPUT=~{input_bam} \
       OUTPUT=~{read_group_md5_filename}
