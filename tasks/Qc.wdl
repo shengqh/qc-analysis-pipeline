@@ -18,16 +18,22 @@ version 1.0
 task CollectQualityYieldMetrics {
   input {
     File input_bam
+    File? input_bam_index
     String metrics_filename
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
     Int preemptible_tries
   }
 
-  Int disk_size = ceil(size(input_bam, "GiB")) + 20
+  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
+  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
     java -Xms2000m -jar /usr/picard/picard.jar \
       CollectQualityYieldMetrics \
       INPUT=~{input_bam} \
+      REFERENCE_SEQUENCE=~{ref_fasta} \
       OQ=true \
       OUTPUT=~{metrics_filename}
   }
