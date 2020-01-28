@@ -39,7 +39,7 @@ workflow WholeGenomeSingleSampleQc {
     File ref_dict
     File ref_fasta
     File ref_fasta_index
-    String sample_name
+    String base_name
     Int preemptible_tries
     File wgs_coverage_interval_list
     File contamination_sites_ud
@@ -55,7 +55,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam_index,
-      output_bam_prefix = sample_name + ".readgroup",
+      output_bam_prefix = base_name + ".readgroup",
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
@@ -67,7 +67,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam_index,
-      output_bam_prefix = sample_name,
+      output_bam_prefix = base_name,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
@@ -79,7 +79,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam_index,
-      read_group_md5_filename = sample_name + ".readgroup.md5",
+      read_group_md5_filename = base_name + ".readgroup.md5",
       preemptible_tries = preemptible_tries
   }
 
@@ -87,7 +87,7 @@ workflow WholeGenomeSingleSampleQc {
   call QC.CollectQualityYieldMetrics as CollectQualityYieldMetrics {
     input:
       input_bam = input_bam,
-      metrics_filename = sample_name + ".quality_yield_metrics",
+      metrics_filename = base_name + ".quality_yield_metrics",
       preemptible_tries = preemptible_tries
   }
 
@@ -96,7 +96,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam,
-      metrics_filename = sample_name + ".wgs_metrics",
+      metrics_filename = base_name + ".wgs_metrics",
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
       wgs_coverage_interval_list = wgs_coverage_interval_list,
@@ -109,7 +109,7 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       input_bam_index = input_bam_index,
-      metrics_filename = sample_name + ".raw_wgs_metrics",
+      metrics_filename = base_name + ".raw_wgs_metrics",
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
       wgs_coverage_interval_list = wgs_coverage_interval_list,
@@ -127,7 +127,7 @@ workflow WholeGenomeSingleSampleQc {
       contamination_sites_mu = contamination_sites_mu,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      output_prefix = sample_name + ".verify_bam_id",
+      output_prefix = base_name + ".verify_bam_id",
       preemptible_tries = preemptible_tries,
       contamination_underestimation_factor = 0.75
   }
@@ -136,7 +136,7 @@ workflow WholeGenomeSingleSampleQc {
   call QC.CollectDuplicateMetrics as CollectDuplicateMetrics {
     input:
       input_bam = input_bam,
-      output_bam_prefix = sample_name,
+      output_bam_prefix = base_name,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
