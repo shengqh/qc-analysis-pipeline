@@ -41,7 +41,6 @@ version 1.0
 # Git URL import
 import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/AggregatedBamQC.wdl" as AggregatedQC
 import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/Qc.wdl" as QC
-import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/verify-bam-id/tasks/BamProcessing.wdl" as Processing
 
 # WORKFLOW DEFINITION
 workflow WholeGenomeSingleSampleQc {
@@ -109,19 +108,19 @@ workflow WholeGenomeSingleSampleQc {
   }
 
   # Estimate level of cross-sample contamination
-   call Processing.CheckContamination as CheckContamination {
-     input:
-       input_bam = input_bam,
-       input_bam_index = input_bam_index,
-       contamination_sites_ud = contamination_sites_ud,
-       contamination_sites_bed = contamination_sites_bed,
-       contamination_sites_mu = contamination_sites_mu,
-       ref_fasta = ref_fasta,
-       ref_fasta_index = ref_fasta_index,
-       output_prefix = sample_name + ".verify_bam_id",
-       preemptible_tries = papi_settings.agg_preemptible_tries,
-       contamination_underestimation_factor = 0.75
-   }
+  call QC.CheckContamination as CheckContamination {
+    input:
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
+      contamination_sites_ud = contamination_sites_ud,
+      contamination_sites_bed = contamination_sites_bed,
+      contamination_sites_mu = contamination_sites_mu,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      output_prefix = sample_name + ".verify_bam_id",
+      preemptible_tries = papi_settings.agg_preemptible_tries,
+      contamination_underestimation_factor = 0.75
+  }
 
   # Calculate the duplication rate since MarkDuplicates was already performed
   call QC.CollectDuplicateMetrics as CollectDuplicateMetrics {
