@@ -153,55 +153,6 @@ task CollectAggregationMetrics {
   }
 }
 
-task CheckPreValidation {
-  input {
-    File duplication_metrics
-    File chimerism_metrics
-    Float max_duplication_in_reasonable_sample
-    Float max_chimerism_in_reasonable_sample
-    Int preemptible_tries
-  }
-  
-  command <<<
-    set -o pipefail
-    set -e
-
-    grep -A 1 PERCENT_DUPLICATION ~{duplication_metrics} > duplication.csv
-    grep -A 3 PCT_CHIMERAS ~{chimerism_metrics} | grep -v OF_PAIR > chimerism.csv
-
-    python <<CODE
-
-    import csv
-    with open('duplication.csv') as dupfile:
-      reader = csv.DictReader(dupfile, delimiter='\t')
-      for row in reader:
-        with open("duplication_value.txt","w") as file:
-          file.write(row['PERCENT_DUPLICATION'])
-          file.close()
-
-    with open('chimerism.csv') as chimfile:
-      reader = csv.DictReader(chimfile, delimiter='\t')
-      for row in reader:
-        with open("chimerism_value.txt","w") as file:
-          file.write(row['PCT_CHIMERAS'])
-          file.close()
-
-    CODE
-
-  >>>
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    preemptible: preemptible_tries
-    docker: "us.gcr.io/broad-gotc-prod/python:2.7"
-    memory: "2 GiB"
-  }
-  output {
-    Float duplication_rate = read_float("duplication_value.txt")
-    Float chimerism_rate = read_float("chimerism_value.txt")
-    Boolean is_outlier_data = duplication_rate > max_duplication_in_reasonable_sample || chimerism_rate > max_chimerism_in_reasonable_sample
-  }
-}
-
 task ValidateSamFile {
   input {
     File input_bam
@@ -401,81 +352,6 @@ task CalculateReadGroupChecksum {
   }
   output {
     File md5_file = "~{read_group_md5_filename}"
-  }
-}
-
-# Validate a (g)VCF with -gvcf specific validation
-task ValidateVCF {
-  input {
-    File input_vcf
-    File input_vcf_index
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File dbsnp_vcf
-    File dbsnp_vcf_index
-    File calling_interval_list
-    Int preemptible_tries
-    Boolean is_gvcf = true
-    String gatk_docker = "us.gcr.io/broad-gatk/gatk:4.0.10.1"
-  }
-
-  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
-  Int disk_size = ceil(size(input_vcf, "GiB") + size(dbsnp_vcf, "GiB") + ref_size) + 20
-
-  command {
-    gatk --java-options -Xms6000m \
-      ValidateVariants \
-      -V ~{input_vcf} \
-      -R ~{ref_fasta} \
-      -L ~{calling_interval_list} \
-      ~{true="-gvcf" false="" is_gvcf} \
-      --validation-type-to-exclude ALLELES \
-      --dbsnp ~{dbsnp_vcf}
-  }
-  runtime {
-    docker: gatk_docker
-    preemptible: preemptible_tries
-    memory: "7000 MiB"
-    disks: "local-disk " + disk_size + " HDD"
-  }
-}
-
-# Collect variant calling metrics from GVCF output
-task CollectVariantCallingMetrics {
-  input {
-    File input_vcf
-    File input_vcf_index
-    String metrics_basename
-    File dbsnp_vcf
-    File dbsnp_vcf_index
-    File ref_dict
-    File evaluation_interval_list
-    Boolean is_gvcf = true
-    Int preemptible_tries
-  }
-
-  Int disk_size = ceil(size(input_vcf, "GiB") + size(dbsnp_vcf, "GiB")) + 20
-
-  command {
-    java -Xms2000m -jar /usr/gitc/picard.jar \
-      CollectVariantCallingMetrics \
-      INPUT=~{input_vcf} \
-      OUTPUT=~{metrics_basename} \
-      DBSNP=~{dbsnp_vcf} \
-      SEQUENCE_DICTIONARY=~{ref_dict} \
-      TARGET_INTERVALS=~{evaluation_interval_list} \
-      ~{true="GVCF_INPUT=true" false="" is_gvcf}
-  }
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.1-1540490856"
-    preemptible: preemptible_tries
-    memory: "3 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-  }
-  output {
-    File summary_metrics = "~{metrics_basename}.variant_calling_summary_metrics"
-    File detail_metrics = "~{metrics_basename}.variant_calling_detail_metrics"
   }
 }
 
