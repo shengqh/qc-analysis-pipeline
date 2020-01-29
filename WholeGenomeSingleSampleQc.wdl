@@ -47,19 +47,19 @@ workflow WholeGenomeSingleSampleQc {
   Int read_length = 250
   
   # Validate the BAM or CRAM file
-  call QC.ValidateSamFile as ValidateSamFile {
-    input:
-      input_bam = input_bam,
-      input_bam_index = input_bam_index,
-      report_filename = base_name + ".validation_report",
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ignore = ["MISSING_TAG_NM"],
-      max_output = 1000000000,
-      is_outlier_data = is_outlier_data,
-      preemptible_tries = preemptible_tries
-  }
+  # call QC.ValidateSamFile as ValidateSamFile {
+  #  input:
+  #    input_bam = input_bam,
+  #    input_bam_index = input_bam_index,
+  #    report_filename = base_name + ".validation_report",
+  #    ref_dict = ref_dict,
+  #    ref_fasta = ref_fasta,
+  #    ref_fasta_index = ref_fasta_index,
+  #    ignore = ["MISSING_TAG_NM"],
+  #    max_output = 1000000000,
+  #    is_outlier_data = is_outlier_data,
+  #    preemptible_tries = preemptible_tries
+  # }
 
   # QC the final BAM (consolidated after scattered BQSR)
   call QC.CollectReadgroupBamQualityMetrics as CollectReadgroupBamQualityMetrics {
@@ -157,7 +157,7 @@ workflow WholeGenomeSingleSampleQc {
   # Outputs that will be retained when execution is complete
   output {
 
-    File validation_report = ValidateSamFile.report
+    # File validation_report = ValidateSamFile.report
 
     File read_group_alignment_summary_metrics = CollectReadgroupBamQualityMetrics.alignment_summary_metrics
     File read_group_gc_bias_detail_metrics = CollectReadgroupBamQualityMetrics.gc_bias_detail_metrics
