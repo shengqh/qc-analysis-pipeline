@@ -396,6 +396,37 @@ task CollectDuplicateMetrics {
   }
 }
 
+# Build BAM/CRAM index
+task BuildBamIndex {
+  input {
+    File input_bam
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
+    Int preemptible_tries
+  }
+
+  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
+  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
+
+  command {
+    java -Xms2000m -jar /usr/picard/picard.jar \
+      BuildBamIndex \
+      INPUT=~{input_bam}
+      ASSUME_SORTED=true \
+      REFERENCE_SEQUENCE=~{ref_fasta}
+  }
+  runtime {
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    memory: "3 GiB"
+    disks: "local-disk " + disk_size + " HDD"
+    preemptible: preemptible_tries
+  }
+  output {
+    File bam_index = glob("*.{b,cr}ai")
+  }
+}
+
 # Notes on the contamination estimate:
 # The contamination value is read from the FREEMIX field of the selfSM file output by verifyBamId
 #
