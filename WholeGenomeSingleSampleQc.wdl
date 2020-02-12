@@ -61,6 +61,13 @@ workflow WholeGenomeSingleSampleQc {
   #    preemptible_tries = preemptible_tries
   # }
 
+  # generate a md5
+  call QC.CalculateChecksum as CalculateChecksum {
+    input:
+      input_bam = input_bam,
+      preemptible_tries = preemptible_tries
+  }
+
   # QC the final BAM (consolidated after scattered BQSR)
   call QC.CollectReadgroupBamQualityMetrics as CollectReadgroupBamQualityMetrics {
     input:
@@ -193,5 +200,7 @@ workflow WholeGenomeSingleSampleQc {
 
     File wgs_metrics = CollectWgsMetrics.metrics
     File raw_wgs_metrics = CollectRawWgsMetrics.metrics
+
+    File input_bam_md5 = CalculateChecksum.md5
   }
 }

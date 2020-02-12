@@ -478,3 +478,25 @@ task CheckContamination {
     Float contamination = read_float(stdout())
   }
 }
+
+task CalculateChecksum {
+  input {
+    File input_bam
+    Int preemptible_tries
+  }
+
+  Int disk_size = ceil(size(input_bam, "GiB")) + 20
+
+  command {
+    md5sum ~{input_bam} > ~{input_bam}.md5
+  }
+  runtime {
+    preemptible: preemptible_tries
+    memory: "2 GiB"
+    disk: "local-disk " + disk_size + " HDD"
+    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+  }
+  output {
+    File md5 = "~{input_bam}.md5"
+  }
+}
