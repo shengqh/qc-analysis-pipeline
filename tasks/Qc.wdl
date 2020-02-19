@@ -155,46 +155,6 @@ task ValidateSamFile {
   }
 }
 
-# Note these tasks will break if the read lengths in the bam are greater than 250.
-task CollectWgsMetrics {
-  input {
-    File input_bam
-    File input_bam_index
-    String metrics_filename
-    File wgs_coverage_interval_list
-    File ref_fasta
-    File ref_fasta_index
-    Int read_length
-    Int preemptible_tries
-  }
-
-  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB")
-  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
-
-  command {
-    java -Xms2000m -jar /usr/picard/picard.jar \
-      CollectWgsMetrics \
-      INPUT=~{input_bam} \
-      VALIDATION_STRINGENCY=SILENT \
-      REFERENCE_SEQUENCE=~{ref_fasta} \
-      INCLUDE_BQ_HISTOGRAM=true \
-      INTERVALS=~{wgs_coverage_interval_list} \
-      OUTPUT=~{metrics_filename} \
-      USE_FAST_ALGORITHM=true \
-      READ_LENGTH=~{read_length}
-  }
-  runtime {
-    # Using older image due to: https://github.com/broadinstitute/picard/issues/1402
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.20.4"
-    preemptible: preemptible_tries
-    memory: "3 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-  }
-  output {
-    File metrics = "~{metrics_filename}"
-  }
-}
-
 # Collect raw WGS metrics (commonly used QC thresholds)
 task CollectRawWgsMetrics {
   input {
