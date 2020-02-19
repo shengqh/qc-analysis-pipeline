@@ -61,18 +61,6 @@ workflow WholeGenomeSingleSampleQc {
   #    preemptible_tries = preemptible_tries
   # }
 
-  # QC the final BAM (consolidated after scattered BQSR)
-  call QC.CollectReadgroupBamQualityMetrics as CollectReadgroupBamQualityMetrics {
-    input:
-      input_bam = input_bam,
-      input_bam_index = input_bam_index,
-      base_name = base_name + ".readgroup",
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      preemptible_tries = preemptible_tries
-  }
-
   # QC the final BAM some more (no such thing as too much QC)
   call QC.CollectAggregationMetrics as CollectAggregationMetrics {
     input:
@@ -82,15 +70,6 @@ workflow WholeGenomeSingleSampleQc {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      preemptible_tries = preemptible_tries
-  }
-
-  # Generate a checksum per readgroup in the final BAM
-  call QC.CalculateReadGroupChecksum as CalculateReadGroupChecksum {
-    input:
-      input_bam = input_bam,
-      input_bam_index = input_bam_index,
-      read_group_md5_filename = base_name + ".readgroup.md5",
       preemptible_tries = preemptible_tries
   }
 
@@ -161,13 +140,6 @@ workflow WholeGenomeSingleSampleQc {
   output {
 
     # File validation_report = ValidateSamFile.report
-
-    File read_group_alignment_summary_metrics = CollectReadgroupBamQualityMetrics.alignment_summary_metrics
-    File read_group_gc_bias_detail_metrics = CollectReadgroupBamQualityMetrics.gc_bias_detail_metrics
-    File read_group_gc_bias_pdf = CollectReadgroupBamQualityMetrics.gc_bias_pdf
-    File read_group_gc_bias_summary_metrics = CollectReadgroupBamQualityMetrics.gc_bias_summary_metrics
-
-    File calculate_read_group_checksum_md5 = CalculateReadGroupChecksum.md5_file
 
     File alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
     File bait_bias_detail_metrics = CollectAggregationMetrics.bait_bias_detail_metrics

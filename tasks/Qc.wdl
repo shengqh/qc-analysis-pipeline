@@ -48,54 +48,6 @@ task CollectQualityYieldMetrics {
   }
 }
 
-# Collect alignment summary and GC bias quality metrics
-task CollectReadgroupBamQualityMetrics {
-  input {
-    File input_bam
-    File input_bam_index
-    String base_name
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
-    Boolean collect_gc_bias_metrics = true
-    Int preemptible_tries
-  }
-
-  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
-  Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
-
-  command {
-    # These are optionally generated, but need to exist for Cromwell's sake
-    touch ~{base_name}.gc_bias.detail_metrics \
-      ~{base_name}.gc_bias.pdf \
-      ~{base_name}.gc_bias.summary_metrics
-
-    java -Xms5000m -jar /usr/picard/picard.jar \
-      CollectMultipleMetrics \
-      INPUT=~{input_bam} \
-      REFERENCE_SEQUENCE=~{ref_fasta} \
-      OUTPUT=~{base_name} \
-      ASSUME_SORTED=true \
-      PROGRAM=null \
-      PROGRAM=CollectAlignmentSummaryMetrics \
-      ~{true='PROGRAM="CollectGcBiasMetrics"' false="" collect_gc_bias_metrics} \
-      METRIC_ACCUMULATION_LEVEL=null \
-      METRIC_ACCUMULATION_LEVEL=READ_GROUP
-  }
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
-    memory: "7 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-    preemptible: preemptible_tries
-  }
-  output {
-    File alignment_summary_metrics = "~{base_name}.alignment_summary_metrics"
-    File gc_bias_detail_metrics = "~{base_name}.gc_bias.detail_metrics"
-    File gc_bias_pdf = "~{base_name}.gc_bias.pdf"
-    File gc_bias_summary_metrics = "~{base_name}.gc_bias.summary_metrics"
-  }
-}
-
 # Collect quality metrics from the aggregated bam
 task CollectAggregationMetrics {
   input {
@@ -332,34 +284,6 @@ task CollectHsMetrics {
 
   output {
     File metrics = metrics_filename
-  }
-}
-
-# Generate a checksum per readgroup
-task CalculateReadGroupChecksum {
-  input {
-    File input_bam
-    File input_bam_index
-    String read_group_md5_filename
-    Int preemptible_tries
-  }
-
-  Int disk_size = ceil(size(input_bam, "GiB")) + 20
-
-  command {
-    java -Xms1000m -jar /usr/picard/picard.jar \
-      CalculateReadGroupChecksum \
-      INPUT=~{input_bam} \
-      OUTPUT=~{read_group_md5_filename}
-  }
-  runtime {
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
-    preemptible: preemptible_tries
-    memory: "2 GiB"
-    disks: "local-disk " + disk_size + " HDD"
-  }
-  output {
-    File md5_file = "~{read_group_md5_filename}"
   }
 }
 
