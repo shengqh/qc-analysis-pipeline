@@ -69,18 +69,6 @@ workflow WholeGenomeSingleSampleQc {
   #    preemptible_tries = preemptible_tries
   # }
 
-  # QC the final BAM (consolidated after scattered BQSR)
-  call QC.CollectReadgroupBamQualityMetrics as CollectReadgroupBamQualityMetrics {
-    input:
-      input_bam = input_bam,
-      input_bam_index = BuildBamIndex.bam_index,
-      base_name = base_name + ".readgroup",
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      preemptible_tries = preemptible_tries
-  }
-
   # QC the final BAM some more (no such thing as too much QC)
   call QC.CollectAggregationMetrics as CollectAggregationMetrics {
     input:
@@ -93,15 +81,6 @@ workflow WholeGenomeSingleSampleQc {
       preemptible_tries = preemptible_tries
   }
 
-  # Generate a checksum per readgroup in the final BAM
-  call QC.CalculateReadGroupChecksum as CalculateReadGroupChecksum {
-    input:
-      input_bam = input_bam,
-      input_bam_index = BuildBamIndex.bam_index,
-      read_group_md5_filename = base_name + ".readgroup.md5",
-      preemptible_tries = preemptible_tries
-  }
-
   # QC the BAM sequence yield
   call QC.CollectQualityYieldMetrics as CollectQualityYieldMetrics {
     input:
@@ -111,19 +90,6 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
       metrics_filename = base_name + ".quality_yield_metrics",
-      preemptible_tries = preemptible_tries
-  }
-
-  # QC the sample WGS metrics (stringent thresholds)
-  call QC.CollectWgsMetrics as CollectWgsMetrics {
-    input:
-      input_bam = input_bam,
-      input_bam_index = BuildBamIndex.bam_index,
-      metrics_filename = base_name + ".wgs_metrics",
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      wgs_coverage_interval_list = wgs_coverage_interval_list,
-      read_length = read_length,
       preemptible_tries = preemptible_tries
   }
 
@@ -152,7 +118,6 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta_index = ref_fasta_index,
       output_prefix = base_name + ".verify_bam_id",
       preemptible_tries = preemptible_tries,
-      contamination_underestimation_factor = 0.75
   }
 
   # Calculate the duplication rate since MarkDuplicates was already performed
@@ -171,13 +136,6 @@ workflow WholeGenomeSingleSampleQc {
 
     # File validation_report = ValidateSamFile.report
     File input_bam_index = BuildBamIndex.bam_index
-
-    File read_group_alignment_summary_metrics = CollectReadgroupBamQualityMetrics.alignment_summary_metrics
-    File read_group_gc_bias_detail_metrics = CollectReadgroupBamQualityMetrics.gc_bias_detail_metrics
-    File read_group_gc_bias_pdf = CollectReadgroupBamQualityMetrics.gc_bias_pdf
-    File read_group_gc_bias_summary_metrics = CollectReadgroupBamQualityMetrics.gc_bias_summary_metrics
-
-    File calculate_read_group_checksum_md5 = CalculateReadGroupChecksum.md5_file
 
     File alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
     File bait_bias_detail_metrics = CollectAggregationMetrics.bait_bias_detail_metrics
@@ -200,7 +158,6 @@ workflow WholeGenomeSingleSampleQc {
 
     File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
 
-    File wgs_metrics = CollectWgsMetrics.metrics
     File raw_wgs_metrics = CollectRawWgsMetrics.metrics
   }
 }
