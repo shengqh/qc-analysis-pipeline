@@ -423,7 +423,7 @@ task BuildBamIndex {
     preemptible: preemptible_tries
   }
   output {
-    File bam_index = glob("*.{b,cr}ai")
+    File bam_index = sub(~{input_bam},"am$","ai")
   }
 }
 
