@@ -69,6 +69,13 @@ workflow WholeGenomeSingleSampleQc {
   #    preemptible_tries = preemptible_tries
   # }
 
+  # generate a md5
+  call QC.CalculateChecksum as CalculateChecksum {
+    input:
+      input_bam = input_bam,
+      preemptible_tries = preemptible_tries
+  }
+
   # QC the final BAM some more (no such thing as too much QC)
   call QC.CollectAggregationMetrics as CollectAggregationMetrics {
     input:
@@ -159,5 +166,7 @@ workflow WholeGenomeSingleSampleQc {
     File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
 
     File raw_wgs_metrics = CollectRawWgsMetrics.metrics
+
+    File input_bam_md5 = CalculateChecksum.md5
   }
 }
