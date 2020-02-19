@@ -420,7 +420,6 @@ task CheckContamination {
     File ref_fasta_index
     String output_prefix
     Int preemptible_tries
-    Float contamination_underestimation_factor
     Boolean disable_sanity_check = false
   }
 
@@ -457,7 +456,7 @@ task CheckContamination {
           # vcf and bam.
           sys.stderr.write("Found zero likelihoods. Bam is either very-very shallow, or aligned to the wrong reference (relative to the vcf).")
           sys.exit(1)
-        print(float(row["FREEMIX"])/~{contamination_underestimation_factor})
+        print(float(row["FREEMIX"]))
         i = i + 1
         # there should be exactly one row, and if this isn't the case the format of the output is unexpectedly different
         # and the results are not reliable.

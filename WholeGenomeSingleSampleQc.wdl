@@ -144,7 +144,6 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta_index = ref_fasta_index,
       output_prefix = base_name + ".verify_bam_id",
       preemptible_tries = preemptible_tries,
-      contamination_underestimation_factor = 0.75
   }
 
   # Calculate the duplication rate since MarkDuplicates was already performed
