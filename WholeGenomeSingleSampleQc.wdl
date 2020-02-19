@@ -25,6 +25,7 @@ version 1.0
 
 # Git URL import
 import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tasks/Qc.wdl" as QC
+# import "./tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
 workflow WholeGenomeSingleSampleQc {
