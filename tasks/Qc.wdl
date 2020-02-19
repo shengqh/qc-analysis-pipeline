@@ -494,7 +494,7 @@ task CalculateChecksum {
     preemptible: preemptible_tries
     memory: "2 GiB"
     disk: "local-disk " + disk_size + " HDD"
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    docker: "us.gcr.io/gcp-runtimes/ubuntu_16_0_4:latest"
   }
   output {
     File md5 = "~{input_bam}.md5"
