@@ -249,6 +249,7 @@ task CollectHsMetrics {
 task CollectDuplicateMetrics {
   input {
     File input_bam
+    File input_bam_index
     String output_bam_prefix
     File ref_dict
     File ref_fasta
