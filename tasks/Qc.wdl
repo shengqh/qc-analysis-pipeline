@@ -295,14 +295,10 @@ task BuildBamIndex {
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
-    java -Xms2000m -jar /usr/picard/picard.jar \
-      BuildBamIndex \
-      INPUT=~{input_bam}
-      ASSUME_SORTED=true \
-      REFERENCE_SEQUENCE=~{ref_fasta}
+    /usr/local/bin/samtools index ~{input_bam} ~{bam_index_file_name}
   }
   runtime {
-    docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.2-1564506709"
     memory: "3 GiB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
