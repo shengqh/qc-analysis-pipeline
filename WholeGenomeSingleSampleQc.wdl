@@ -55,20 +55,20 @@ workflow WholeGenomeSingleSampleQc {
       ref_fasta_index = ref_fasta_index,
       preemptible_tries = preemptible_tries
   }
+  
   # Validate the BAM or CRAM file
-  # call QC.ValidateSamFile as ValidateSamFile {
-  #  input:
-  #    input_bam = input_bam,
-  #    input_bam_index = input_bam_index,
-  #    report_filename = base_name + ".validation_report",
-  #    ref_dict = ref_dict,
-  #    ref_fasta = ref_fasta,
-  #    ref_fasta_index = ref_fasta_index,
-  #    ignore = ["MISSING_TAG_NM"],
-  #    max_output = 1000000000,
-  #    is_outlier_data = is_outlier_data,
-  #    preemptible_tries = preemptible_tries
-  # }
+  call QC.ValidateSamFile as ValidateSamFile {
+    input:
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
+      report_filename = base_name + ".validation_report",
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      ignore = ["MISSING_TAG_NM"],
+      is_outlier_data = is_outlier_data,
+      preemptible_tries = preemptible_tries
+   }
 
   # generate a md5
   call QC.CalculateChecksum as CalculateChecksum {
