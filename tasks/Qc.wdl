@@ -288,9 +288,9 @@ task BuildBamIndex {
     File ref_fasta
     File ref_fasta_index
     Int preemptible_tries
-    String bam_index_file_name = sub(input_bam,"am$","ai")
   }
 
+  String bam_index_file_name = sub(input_bam,"am$","ai")
   Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
