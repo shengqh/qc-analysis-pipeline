@@ -119,7 +119,6 @@ task ValidateSamFile {
     File ref_dict
     File ref_fasta
     File ref_fasta_index
-    Int? max_output
     Array[String]? ignore
     Boolean? is_outlier_data
     Int preemptible_tries
@@ -138,9 +137,8 @@ task ValidateSamFile {
       INPUT=~{input_bam} \
       OUTPUT=~{report_filename} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
-      ~{"MAX_OUTPUT=" + max_output} \
       IGNORE=~{default="null" sep=" IGNORE=" ignore} \
-      MODE=VERBOSE \
+      MODE=SUMMARY \
       ~{default='SKIP_MATE_VALIDATION=false' true='SKIP_MATE_VALIDATION=true' false='SKIP_MATE_VALIDATION=false' is_outlier_data} \
       IS_BISULFITE_SEQUENCED=false
   }
