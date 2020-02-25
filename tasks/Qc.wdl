@@ -306,7 +306,7 @@ task BuildBamIndex {
     preemptible: preemptible_tries
   }
   output {
-    File bam_index = sub(sub(input_bam, "bam$", "bam.bai"), "cram$", "cram.crai"))
+    File bam_index = sub(sub(input_bam, "bam$", "bam.bai"), "cram$", "cram.crai")
   }
 }
 
