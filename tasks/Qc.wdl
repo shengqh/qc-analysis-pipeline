@@ -282,27 +282,30 @@ task CollectDuplicateMetrics {
 task BuildBamIndex {
   input {
     File input_bam
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
+    File ref_cache
     Int preemptible_tries
   }
 
-  String bam_index_file_name = sub(input_bam,"am$","ai")
-  Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
+  Float ref_size = size(ref_cache, "GiB") * 5 + 1.0)
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
-    /usr/local/bin/samtools index ~{input_bam} ~{bam_index_file_name}
+    # build the reference sequence cache
+    tar -zxf ~{ref_cache}
+    export REF_PATH=./cache/%2s/%2s/%s
+    export REF_CACHE=./cache/%2s/%2s/%s
+
+    # index the BAM or CRAM
+    /usr/local/bin/samtools index ~{input_bam}
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.2-1564506709"
-    memory: "3 GiB"
+    memory: "1 GiB"
     disks: "local-disk " + disk_size + " HDD"
     preemptible: preemptible_tries
   }
   output {
-    File bam_index = bam_index_file_name
+    File bam_index = sub(sub(input_bam, "bam$", "bam.bai"), "cram$", "cram.crai"))
   }
 }
 

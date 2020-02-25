@@ -31,6 +31,7 @@ import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tas
 workflow WholeGenomeSingleSampleQc {
   input {
     File input_bam
+    File ref_cache
     File ref_dict
     File ref_fasta
     File ref_fasta_index
@@ -50,9 +51,7 @@ workflow WholeGenomeSingleSampleQc {
   call QC.BuildBamIndex as BuildBamIndex {
     input:
       input_bam = input_bam,
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
+      ref_cache = ref_cache,
       preemptible_tries = preemptible_tries
   }
   
@@ -142,7 +141,7 @@ workflow WholeGenomeSingleSampleQc {
   # Outputs that will be retained when execution is complete
   output {
 
-    # File validation_report = ValidateSamFile.report
+    File validation_report = ValidateSamFile.report
     File input_bam_index = BuildBamIndex.bam_index
 
     File alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
