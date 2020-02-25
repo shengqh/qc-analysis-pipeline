@@ -131,6 +131,7 @@ workflow WholeGenomeSingleSampleQc {
   call QC.CollectDuplicateMetrics as CollectDuplicateMetrics {
     input:
       input_bam = input_bam,
+      input_bam_index = BuildBamIndex.bam_index,
       output_bam_prefix = base_name,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
