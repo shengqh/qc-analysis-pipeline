@@ -141,7 +141,7 @@ workflow WholeGenomeSingleSampleQc {
   # Outputs that will be retained when execution is complete
   output {
 
-    # File validation_report = ValidateSamFile.report
+    File validation_report = ValidateSamFile.report
     File input_bam_index = BuildBamIndex.bam_index
 
     File alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
