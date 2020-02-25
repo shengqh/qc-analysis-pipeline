@@ -287,7 +287,7 @@ task BuildBamIndex {
     Int preemptible_tries
   }
 
-  Float ref_size = size(ref_cache, "GiB") * 5 + 1.0)
+  Float ref_size = size(ref_cache, "GiB") * 5 + 1.0
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
   command {
