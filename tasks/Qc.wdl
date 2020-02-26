@@ -398,7 +398,7 @@ task CalculateChecksum {
     Int preemptible_tries
   }
 
-  Int disk_size = ceil(size(input_bam, "GiB")) + 20
+  Int disk_size = ceil(size(input_bam, "GiB") * 3) + 20
 
   command {
     md5sum ~{input_bam} > ~{input_bam}.md5
