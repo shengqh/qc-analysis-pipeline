@@ -398,7 +398,7 @@ task CalculateChecksum {
     Int preemptible_tries
   }
 
-  Int disk_size = ceil(size(input_bam, "GiB") * 3) + 20
+  Int disk_size = ceil(size(input_bam, "GiB")) + 20
 
   command {
     md5sum ~{input_bam} > ~{input_bam}.md5
@@ -406,7 +406,7 @@ task CalculateChecksum {
   runtime {
     preemptible: preemptible_tries
     memory: "2 GiB"
-    disk: "local-disk " + disk_size + " HDD"
+    disks: "local-disk " + disk_size + " HDD"
     docker: "us.gcr.io/gcp-runtimes/ubuntu_16_0_4:latest"
   }
   output {
