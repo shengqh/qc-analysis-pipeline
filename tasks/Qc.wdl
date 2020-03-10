@@ -114,7 +114,7 @@ task CollectAggregationMetrics {
 task ValidateSamFile {
   input {
     File input_bam
-    File? input_bam_index
+    File input_bam_index
     String report_filename
     File ref_dict
     File ref_fasta
