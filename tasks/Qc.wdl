@@ -18,7 +18,7 @@ version 1.0
 task CollectQualityYieldMetrics {
   input {
     File input_bam
-    File? input_bam_index
+    File input_bam_index
     String metrics_filename
     File ref_dict
     File ref_fasta
