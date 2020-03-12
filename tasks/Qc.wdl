@@ -311,8 +311,8 @@ task BuildBamIndex {
     preemptible: preemptible_tries
   }
   output {
-    File bam = "~{bam_link}"
-    File bam_index = sub(sub(input_bam, "bam$", "bam.bai"), "cram$", "cram.crai")
+    File bam = bam_link
+    File bam_index = sub(sub(bam_link, "bam$", "bam.bai"), "cram$", "cram.crai")
   }
 }
 
