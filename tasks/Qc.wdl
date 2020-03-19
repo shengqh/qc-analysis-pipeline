@@ -174,8 +174,10 @@ task CollectRawWgsMetrics {
 
   command {
     java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
-      CollectRawWgsMetrics \
+      CollectWgsMetrics \
       INPUT=~{input_bam} \
+      MINIMUM_MAPPING_QUALITY=0 \
+      MINIMUM_BASE_QUALITY=3 \
       VALIDATION_STRINGENCY=SILENT \
       REFERENCE_SEQUENCE=~{ref_fasta} \
       INCLUDE_BQ_HISTOGRAM=true \
