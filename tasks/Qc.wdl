@@ -293,8 +293,8 @@ task BuildBamIndex {
   String bam_link = base_name + "." + if is_bam then "bam" else "cram"
 
   command {
-    # Move the BAM/CRAM to a harmonized name and path
-    mv ~{input_bam} ~{bam_link}
+    # Link the BAM/CRAM to a harmonized name and path
+    ln -s ~{input_bam} ~{bam_link}
 
     # build the reference sequence cache
     tar -zxf ~{ref_cache}
