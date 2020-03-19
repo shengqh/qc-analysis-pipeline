@@ -290,8 +290,8 @@ task BuildBamIndex {
 
   Float ref_size = size(ref_cache, "GiB") * 5 + 1.0
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
-  String bam_link = base_name + "." + if is_bam then "bam" else "cram"
-
+  String bam_link = sub(basename(input_bam), basename(basename(input_bam, ".bam"), ".cram"), base_name )
+  
   command {
     # Link the BAM/CRAM to a harmonized name and path
     ln -s ~{input_bam} ~{bam_link}
