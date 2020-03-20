@@ -280,25 +280,30 @@ task CollectDuplicateMetrics {
   }
 }
 
-# Build BAM/CRAM index
+# Build BAM/CRAM index, this should run before all other QC tasks
 task BuildBamIndex {
   input {
     File input_bam
+    String base_name
     File ref_cache
     Int preemptible_tries
   }
 
   Float ref_size = size(ref_cache, "GiB") * 5 + 1.0
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
-
+  String bam_link = sub(basename(input_bam), basename(basename(input_bam, ".bam"), ".cram"), base_name )
+  
   command {
+    # Link the BAM/CRAM to a harmonized name and path
+    ln -s ~{input_bam} ~{bam_link}
+
     # build the reference sequence cache
     tar -zxf ~{ref_cache}
     export REF_PATH=./cache/%2s/%2s/%s
     export REF_CACHE=./cache/%2s/%2s/%s
 
     # index the BAM or CRAM
-    /usr/local/bin/samtools index ~{input_bam}
+    /usr/local/bin/samtools index ~{bam_link}
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/genomes-in-the-cloud:2.4.2-1564506709"
@@ -307,7 +312,8 @@ task BuildBamIndex {
     preemptible: preemptible_tries
   }
   output {
-    File bam_index = sub(sub(input_bam, "bam$", "bam.bai"), "cram$", "cram.crai")
+    File bam = bam_link
+    File bam_index = sub(sub(bam_link, "bam$", "bam.bai"), "cram$", "cram.crai")
   }
 }
 
