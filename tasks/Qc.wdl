@@ -283,7 +283,6 @@ task BuildBamIndex {
   input {
     File input_bam
     String base_name
-    Boolean is_bam
     File ref_cache
     Int preemptible_tries
   }

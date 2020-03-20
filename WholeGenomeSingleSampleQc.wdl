@@ -31,7 +31,6 @@ import "https://raw.githubusercontent.com/jasonwalker80/qc-analysis-pipeline/lin
 workflow WholeGenomeSingleSampleQc {
   input {
     File input_bam
-    Boolean is_bam
     File ref_cache
     File ref_dict
     File ref_fasta
@@ -53,7 +52,6 @@ workflow WholeGenomeSingleSampleQc {
     input:
       input_bam = input_bam,
       base_name = base_name,
-      is_bam = is_bam,
       ref_cache = ref_cache,
       preemptible_tries = preemptible_tries
   }
@@ -144,9 +142,6 @@ workflow WholeGenomeSingleSampleQc {
 
   # Outputs that will be retained when execution is complete
   output {
-
-    File bam = BuildBamIndex.bam
-    File bam_index = BuildBamIndex.bam_index
 
     File validation_report = ValidateSamFile.report
 
