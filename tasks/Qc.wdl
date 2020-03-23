@@ -171,7 +171,7 @@ task CollectRawWgsMetrics {
 
   Int memory_size = ceil((if (disk_size < 110) then 5 else 7) * memory_multiplier)
   String java_memory_size = (memory_size - 1) * 1000
-  
+
   command {
     java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectWgsMetrics \
@@ -186,9 +186,7 @@ task CollectRawWgsMetrics {
       USE_FAST_ALGORITHM=true \
       READ_LENGTH=~{read_length}
 
-    sed 's/picard.analysis.WgsMetrics/picard.analysis.CollectWgsMetrics\$WgsMetrics/' ~{metrics_filename}  > ~{metrics_filename}.fixed
-
-    mv ~{metrics_filename}.fixed ~{metrics_filename}
+    sed -i .original 's/picard.analysis.WgsMetrics/picard.analysis.CollectWgsMetrics\$WgsMetrics/' ~{metrics_filename}
   }
   runtime {
     # Using older image due to: https://github.com/broadinstitute/picard/issues/1402
