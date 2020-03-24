@@ -186,7 +186,7 @@ task CollectRawWgsMetrics {
       USE_FAST_ALGORITHM=true \
       READ_LENGTH=~{read_length}
 
-    sed -i .original 's/picard.analysis.WgsMetrics/picard.analysis.CollectWgsMetrics\$WgsMetrics/' ~{metrics_filename}
+    sed -i.original 's/picard.analysis.WgsMetrics/picard.analysis.CollectWgsMetrics\$WgsMetrics/' ~{metrics_filename}
   }
   runtime {
     # Using older image due to: https://github.com/broadinstitute/picard/issues/1402
