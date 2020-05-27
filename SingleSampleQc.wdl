@@ -41,7 +41,7 @@ workflow SingleSampleQc {
     File contamination_sites_ud
     File contamination_sites_bed
     File contamination_sites_mu
-    Boolean? is_wgs
+    Boolean is_wgs
     Boolean? is_outlier_data
   }
 
@@ -184,8 +184,8 @@ workflow SingleSampleQc {
 
     File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
 
-    File raw_wgs_metrics = CollectRawWgsMetrics.metrics
-    File hs_metrics = CollectHsMetrics.metrics
+    File? raw_wgs_metrics = CollectRawWgsMetrics.metrics
+    File? hs_metrics = CollectHsMetrics.metrics
 
     File input_bam_md5 = CalculateChecksum.md5
   }
