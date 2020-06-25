@@ -1,6 +1,6 @@
 version 1.0
 
-## Copyright Broad Institute, 2018
+## Portions Copyright Broad Institute, 2018
 ##
 ## This WDL pipeline implements QC in human whole-genome or exome/targeted sequencing data.
 ##
@@ -24,9 +24,7 @@ version 1.0
 ## - [VerifyBamID2](https://github.com/Griffan/VerifyBamID)
 
 # Git URL import
-#import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tasks/Qc.wdl" as QC
-import "https://raw.githubusercontent.com/jasonwalker80/qc-analysis-pipeline/wes/tasks/Qc.wdl" as QC
-#import "./tasks/Qc.wdl" as QC
+import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
 workflow SingleSampleQc {
@@ -119,7 +117,7 @@ workflow SingleSampleQc {
   }
   
   if (!is_wgs) {
-    # QC the sample WES metrics since this IS NOT WGS
+    # QC the sample Hs/WES metrics since this IS NOT WGS
     call QC.CollectHsMetrics as CollectHsMetrics {
       input:
         input_bam = BuildBamIndex.bam,
