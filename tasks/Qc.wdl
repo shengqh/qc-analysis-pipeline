@@ -232,7 +232,6 @@ task CollectHsMetrics {
       BAIT_INTERVALS=~{bait_interval_list} \
       METRIC_ACCUMULATION_LEVEL=null \
       METRIC_ACCUMULATION_LEVEL=SAMPLE \
-      METRIC_ACCUMULATION_LEVEL=LIBRARY \
       OUTPUT=~{metrics_filename}
   }
 

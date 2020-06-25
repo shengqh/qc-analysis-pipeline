@@ -1,25 +1,26 @@
 # qc-analysis-pipeline
-Workflows used for QC of WGS data
+Workflows used for QC of WGS or WES data
 
 ### Whole Genome Single Sample QC :
-This WDL pipeline implements QC in human whole-genome sequencing data.
+This WDL pipeline implements QC in human whole-genome or exome/targeted sequencing data.
 
 #### Requirements/expectations
-- Human whole-genome paired-end sequencing data in aligned BAM or CRAM format
+- Human paired-end sequencing data in aligned BAM or CRAM format
 - Input BAM/CRAM files must additionally comply with the following requirements:
 - - files must pass validation by ValidateSamFile
 - - reads are provided in query-sorted order
 - - all reads must have an RG tag
 - Reference genome must be Hg38 with ALT contigs
+- Coverage regions, either WGS or exome/targeted, must be in a compatible interval_list format
 
 #### Outputs 
 - BAM/CRAM Validation Report
 - Several QC Summary Reports
-- - Read group: Alignment and GC Bias 
-- - All reads: Quality, Alignment, Insert Size, Artifact, GC Bias, Duplication, Contamination and WGS Coverage
+- - All reads: Quality, Alignment, Insert Size, Artifact, GC Bias, Duplication, Contamination, and Coverage
 
 ### Software version requirements :
 - Picard 2.21.7
+- samtools 1.3.1 using htslib 1.3.1
 - VerifyBamID2
 - Python 2.7 and 3
 - Cromwell version support 
@@ -40,3 +41,4 @@ Copyright Broad Institute, 2019 | BSD-3
 This script is released under the WDL open source code license (BSD-3) (full license text at https://github.com/openwdl/wdl/blob/master/LICENSE). Note however that the programs it calls may be subject to different licenses. Users are responsible for checking that they are authorized to run all programs before running this script.
 - [Picard](https://broadinstitute.github.io/picard/)
 - [VerifyBamID2](https://github.com/Griffan/VerifyBamID)
+- [samtools](https://github.com/samtools/samtools)

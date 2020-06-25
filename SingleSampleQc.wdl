@@ -1,11 +1,11 @@
 version 1.0
 
-## Copyright Broad Institute, 2018
+## Portions Copyright Broad Institute, 2018
 ##
-## This WDL pipeline implements QC in human whole-genome sequencing data.
+## This WDL pipeline implements QC in human whole-genome or exome/targeted sequencing data.
 ##
 ## Requirements/expectations
-## - Human whole-genome paired-end sequencing data in aligned BAM or CRAM format
+## - Human paired-end sequencing data in aligned BAM or CRAM format
 ## - Input BAM/CRAM files must additionally comply with the following requirements:
 ## - - files must pass validation by ValidateSamFile
 ## - - reads are provided in query-sorted order
@@ -25,10 +25,9 @@ version 1.0
 
 # Git URL import
 import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tasks/Qc.wdl" as QC
-#import "./tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
-workflow WholeGenomeSingleSampleQc {
+workflow SingleSampleQc {
   input {
     File input_bam
     File ref_cache
@@ -37,10 +36,11 @@ workflow WholeGenomeSingleSampleQc {
     File ref_fasta_index
     String base_name
     Int preemptible_tries
-    File wgs_coverage_interval_list
+    File coverage_interval_list
     File contamination_sites_ud
     File contamination_sites_bed
     File contamination_sites_mu
+    Boolean is_wgs
     Boolean? is_outlier_data
   }
 
@@ -100,20 +100,37 @@ workflow WholeGenomeSingleSampleQc {
       metrics_filename = base_name + ".quality_yield_metrics",
       preemptible_tries = preemptible_tries
   }
-
-  # QC the sample raw WGS metrics (common thresholds)
-  call QC.CollectRawWgsMetrics as CollectRawWgsMetrics {
-    input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
-      metrics_filename = base_name + ".raw_wgs_metrics",
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      wgs_coverage_interval_list = wgs_coverage_interval_list,
-      read_length = read_length,
-      preemptible_tries = preemptible_tries
+  
+  if (is_wgs) {
+    # QC the sample raw WGS metrics since this IS WGS data
+    call QC.CollectRawWgsMetrics as CollectRawWgsMetrics {
+      input:
+        input_bam = BuildBamIndex.bam,
+        input_bam_index = BuildBamIndex.bam_index,
+        metrics_filename = base_name + ".raw_wgs_metrics",
+        ref_fasta = ref_fasta,
+        ref_fasta_index = ref_fasta_index,
+        wgs_coverage_interval_list = coverage_interval_list,
+        read_length = read_length,
+        preemptible_tries = preemptible_tries
+    }
   }
-
+  
+  if (!is_wgs) {
+    # QC the sample Hs/WES metrics since this IS NOT WGS
+    call QC.CollectHsMetrics as CollectHsMetrics {
+      input:
+        input_bam = BuildBamIndex.bam,
+        input_bam_index = BuildBamIndex.bam_index,
+        ref_fasta = ref_fasta,
+        ref_fasta_index = ref_fasta_index,
+        metrics_filename = base_name + ".hs_metrics",
+        target_interval_list = coverage_interval_list,
+        bait_interval_list = coverage_interval_list,
+        preemptible_tries = preemptible_tries
+    }
+  }
+  
   # Estimate level of cross-sample contamination
   call QC.CheckContamination as CheckContamination {
     input:
@@ -166,7 +183,8 @@ workflow WholeGenomeSingleSampleQc {
 
     File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
 
-    File raw_wgs_metrics = CollectRawWgsMetrics.metrics
+    File? raw_wgs_metrics = CollectRawWgsMetrics.metrics
+    File? hs_metrics = CollectHsMetrics.metrics
 
     File input_bam_md5 = CalculateChecksum.md5
   }
