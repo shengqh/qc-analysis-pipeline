@@ -1,8 +1,10 @@
 # qc-analysis-pipeline
 Workflows used for QC of WGS or WES data
 
-### Single Sample QC :
+### Single Sample QC
 This WDL pipeline implements QC in human whole-genome or exome/targeted sequencing data.
+
+For more on the metrics and aggregation of metrics from multiple workflow executions, please see the [qc-metric-aggregator](https://github.com/genome/qc-metric-aggregator) repository.
 
 #### Background
 
