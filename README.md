@@ -1,8 +1,21 @@
 # qc-analysis-pipeline
 Workflows used for QC of WGS or WES data
 
-### Whole Genome Single Sample QC :
+### Single Sample QC :
 This WDL pipeline implements QC in human whole-genome or exome/targeted sequencing data.
+
+#### Background
+
+As part of the [AnVIL](https://anvilproject.org/) Data Processing Working Group, a Quality Control (QC) workflow was developed to harmonize and summarize the QC for all WGS and WES sequence data sets ingested and released on the AnVIL.
+The figure below shows the read-level data processing and ingestion process, including decisions regarding reprocessing when data is determined to be incompatible with the Functional Equivalance standard defined in [this](https://www.nature.com/articles/s41467-018-06159-4) Nature Communications publication.
+
+![AnVIL Read-Level Data Ingestion and Processing](https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/images/BGA-84_read-level-data-processing_v1a.png)
+
+#### Summary
+
+The following figure shows the steps of the workflow with approximate costs of executing each step in a cloud-hosted environment. 
+
+![Single-Sample QC Workflow](https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/images/BGA-84_best-practice-QC_v1b.png)
 
 #### Requirements/expectations
 - Human paired-end sequencing data in aligned BAM or CRAM format
