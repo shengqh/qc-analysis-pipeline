@@ -1,5 +1,5 @@
 {
-  "SingleSampleQc.input_bam": "gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam",
+  "SingleSampleQc.input_bam": "gs://broad-public-datasets/NA12878/NA12878.cram",
   "SingleSampleQc.input_bam_index": "gs://genomics-public-data/platinum-genomes/bam/NA12878_S1.bam.bai",
   "SingleSampleQc.base_name": "NA12878",
   "SingleSampleQc.contamination_sites_ud": "gs://gcp-public-data--broad-references/hg38/v0/Homo_sapiens_assembly38.contam.UD",
@@ -12,6 +12,7 @@
   "SingleSampleQc.coverage_interval_list": "gs://gcp-public-data--broad-references/hg38/v0/wgs_coverage_regions.hg38.interval_list",
   "SingleSampleQc.preemptible_tries": 3,
   "SingleSampleQc.is_wgs": "true",
-  "SingleSampleQC.CollectRawWgsMetrics.memory_multiplier": 4,
-  "SingleSampleQC.CollectHsMetrics.memory_multiplier": 2
+  "SingleSampleQc.CollectRawWgsMetrics.memory_multiplier": 4,
+  "SingleSampleQc.CollectHsMetrics.memory_multiplier": 2,
+  "SingleSampleQc.ValidateSamFile.memory_multiplier": 2
 }
