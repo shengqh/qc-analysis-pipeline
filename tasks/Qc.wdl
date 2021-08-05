@@ -318,6 +318,31 @@ task BuildBamIndex {
   }
 }
 
+# Collect BAM/CRAM index stats
+# NOTE: Samtools idxstats is slow on CRAM inputs since the index does not contain the info needed to summarize per-chromosome alignments
+task BamIndexStats {
+  input {
+    File input_bam
+    File input_bam_index
+    Int preemptible_tries
+  }
+
+  Int disk_size = ceil(size(input_bam, "GiB")) + 20
+
+  command {
+    samtools idxstats ~{input_bam} > ~{input_bam}.idxstats
+  }
+  runtime {
+    docker: "us.gcr.io/broad-gotc-prod/samtools:1.0.0-1624651616"
+    memory: "1 GiB"
+    disks: "local-disk " + disk_size + " HDD"
+    preemptible: preemptible_tries
+  }
+  output {
+    File idxstats = "~{input_bam}.idxstats"
+  }
+}
+
 # Notes on the contamination estimate:
 # The contamination value is read from the FREEMIX field of the selfSM file output by verifyBamId
 #

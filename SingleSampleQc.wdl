@@ -56,6 +56,14 @@ workflow SingleSampleQc {
       preemptible_tries = preemptible_tries
   }
   
+  # Collect BAM/CRAM index stats
+  call QC.BamIndexStats as BamIndexStats {
+    input:
+      input_bam = BuildBamIndex.bam,
+      input_bam_index = BuildBamIndex.bam_index,
+      preemptible_tries = preemptible_tries
+  }
+
   # Validate the BAM or CRAM file
   call QC.ValidateSamFile as ValidateSamFile {
     input:
@@ -189,5 +197,6 @@ workflow SingleSampleQc {
     File input_bam_md5 = CalculateChecksum.md5
     String input_bam_md5_hash = CalculateChecksum.md5_hash
     File input_bam_index = BuildBamIndex.bam_index
+    File input_bam_idxstats = BamIndexStats.idxstats
   }
 }
