@@ -328,9 +328,10 @@ task BamIndexStats {
   }
 
   Int disk_size = ceil(size(input_bam, "GiB")) + 20
+  String output_name = basename(input_bam)
 
   command {
-    samtools idxstats ~{input_bam} > ~{input_bam}.idxstats
+    samtools idxstats ~{input_bam} > ~{output_name}.idxstats
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/samtools:1.0.0-1624651616"
@@ -339,7 +340,7 @@ task BamIndexStats {
     preemptible: preemptible_tries
   }
   output {
-    File idxstats = "~{input_bam}.idxstats"
+    File idxstats = "~{output_name}.idxstats"
   }
 }
 
