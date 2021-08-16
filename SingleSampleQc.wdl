@@ -24,7 +24,7 @@ version 1.0
 ## - [VerifyBamID2](https://github.com/Griffan/VerifyBamID)
 
 # Git URL import
-import "https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/tasks/Qc.wdl" as QC
+import "tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
 workflow SingleSampleQc {
@@ -187,6 +187,7 @@ workflow SingleSampleQc {
     File? hs_metrics = CollectHsMetrics.metrics
 
     File input_bam_md5 = CalculateChecksum.md5
+    String input_bam_md5_hash = CalculateChecksum.md5_hash
     File input_bam_index = BuildBamIndex.bam_index
   }
 }
