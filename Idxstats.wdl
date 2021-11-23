@@ -52,8 +52,16 @@ workflow Idxstats {
       preemptible_tries = preemptible_tries
   }
 
+  call QC.RxIdentifier as RxIdentifier {
+    input:
+      idxstats = BamIndexStats.idxstats,
+      sample_id = base_name,
+      preemptible_tries = preemptible_tries
+  }
+
   output {
     File bam_index = BuildBamIndex.bam_index
     File bam_idxstats = BamIndexStats.idxstats 
+    File bam_rx_result = RxIdentifier.rx_result
   }
 }

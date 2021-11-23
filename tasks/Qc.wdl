@@ -4,7 +4,7 @@ version 1.0
 ##
 ## This WDL defines tasks used for QC of human whole-genome or exome sequencing data.
 ## ## Runtime parameters are often optimized for Broad's Google Cloud Platform implementation.
-## For program versions, FALSEdocker containers.
+## For program versions, see docker containers.
 ##
 ## LICENSING :
 ## This script is released under the WDL source code license (BSD-3) (see LICENSE in
