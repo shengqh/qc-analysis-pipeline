@@ -354,6 +354,13 @@ task RxIdentifier {
   Int disk_size = ceil(size(idxstats, "GiB")) + 20
   String output_name = basename(idxstats) + ".Rx"
 
+
+# Rx_identifier
+# # Based on the ratio of X chromosome-derived shotgun sequencing data to the autosomal coverage to establish the probability of an XX or XY karyotype for ancient samples.
+# # Author: Chuan-Chao Wang
+# # Contact: wang@shh.mpg.de, chuan-chao_wang@hms.harvard.edu; Department of Genetics, Harvard Medical School; Department of Archaeogenetics, Max Planck Institute for the Science of Human History.
+# # Date: 30 Jan, 2016
+# # https://doi.org/10.1371/journal.pone.0163019.s003
   command <<<
     R <<SCRIPT
         sample_id <- "~{sample_id}"
