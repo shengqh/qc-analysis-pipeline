@@ -42,6 +42,10 @@ The following figure shows the steps of the workflow with approximate costs of e
   - Successfully tested on v48
   - Does not work on versions < v23 due to output syntax
 
+#### RxIdentifier
+
+For sex estimation from WGS data, methods Ry (https://doi.org/10.1016/j.jas.2013.07.004) and Rx (https://doi.org/10.1371/journal.pone.0163019) were compared against 1kg data. The Ry method required adjustment of the default cutoffs on the 1kg data suggesting the type of sequence data, sample source/quality, coverage levels, and/or other experimental factors may impact the estimation of sex. The Rx method required no adjustments to the default cutoffs of 0.6 and 0.8. For the Rx method, original R code is available: https://doi.org/10.1371/journal.pone.0163019.s003
+
 ### Important Note :
 - The provided JSON is meant to be a ready to use example JSON template of the workflow. It is the user’s responsibility to correctly set the reference and resource input variables using the [GATK Tool and Tutorial Documentations](https://software.broadinstitute.org/gatk/documentation/).
 - Relevant reference and resources bundles can be accessed in [Resource Bundle](https://software.broadinstitute.org/gatk/download/bundle).
