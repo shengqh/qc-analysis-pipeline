@@ -206,5 +206,6 @@ workflow SingleSampleQc {
     File input_bam_index = BuildBamIndex.bam_index
     File input_bam_idxstats = BamIndexStats.idxstats
     File input_bam_rx_result = RxIdentifier.rx_result
+    String input_bam_rx_value = RxIdentifier.rx_value
   }
 }

@@ -27,7 +27,7 @@ version 1.0
 import "tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
-workflow Idxstats {
+workflow RxIdentification {
   input {
     File input_bam
     String base_name
@@ -63,5 +63,6 @@ workflow Idxstats {
     File bam_index = BuildBamIndex.bam_index
     File bam_idxstats = BamIndexStats.idxstats 
     File bam_rx_result = RxIdentifier.rx_result
+    String bam_rx_value = RxIdentifier.rx_value
   }
 }
