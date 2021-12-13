@@ -429,6 +429,7 @@ task RxIdentifier {
   }
   output {
     File rx_result = "~{output_name}"
+    String rx_value = read_tsv(output_name)[0][5]
   }
 }
 

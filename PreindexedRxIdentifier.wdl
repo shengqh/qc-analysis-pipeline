@@ -1,3 +1,4 @@
+
 version 1.0
 
 ## Portions Copyright Broad Institute, 2018
@@ -27,28 +28,19 @@ version 1.0
 import "tasks/Qc.wdl" as QC
 
 # WORKFLOW DEFINITION
-workflow RxIdentification {
+workflow RxIdentifier {
   input {
     File input_bam
+    File input_bam_index
     String base_name
-    File ref_cache
     Int preemptible_tries
   }
 
-  # Generate a BAM or CRAM index
-  call QC.BuildBamIndex as BuildBamIndex {
-    input:
-      input_bam = input_bam,
-      base_name = base_name,
-      ref_cache = ref_cache,
-      preemptible_tries = preemptible_tries
-  }
-  
   # Collect BAM/CRAM index stats
   call QC.BamIndexStats as BamIndexStats {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       preemptible_tries = preemptible_tries
   }
 
@@ -60,9 +52,8 @@ workflow RxIdentification {
   }
 
   output {
-    File bam_index = BuildBamIndex.bam_index
     File bam_idxstats = BamIndexStats.idxstats 
     File bam_rx_result = RxIdentifier.rx_result
-    String bam_rx_value = RxIdentifier.rx_value
+    String rx_value = RxIdentifier.rx_value
   }
 }
