@@ -177,14 +177,22 @@ workflow SingleSampleQc {
 
     File validation_report = ValidateSamFile.report
 
-    File alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics
+    File alignment_summary_metrics_file = CollectAggregationMetrics.alignment_summary_metrics_file
+    String pct_chimeras = CollectAggregationMetrics.pct_chimeras
+    String read1_pf_mismatch_rate = CollectAggregationMetrics.read1_pf_mismatch_rate
+    String read2_pf_mismatch_rate = CollectAggregationMetrics.read2_pf_mismatch_rate
+
     File bait_bias_detail_metrics = CollectAggregationMetrics.bait_bias_detail_metrics
     File bait_bias_summary_metrics = CollectAggregationMetrics.bait_bias_summary_metrics
     File gc_bias_detail_metrics = CollectAggregationMetrics.gc_bias_detail_metrics
     File gc_bias_pdf = CollectAggregationMetrics.gc_bias_pdf
     File gc_bias_summary_metrics = CollectAggregationMetrics.gc_bias_summary_metrics
+
     File insert_size_histogram_pdf = CollectAggregationMetrics.insert_size_histogram_pdf
-    File insert_size_metrics = CollectAggregationMetrics.insert_size_metrics
+    File insert_size_metrics_file = CollectAggregationMetrics.insert_size_metrics_file
+    String median_insert_size = CollectAggregationMetrics.median_insert_size
+    String median_absolute_deviation = CollectAggregationMetrics.median_absolute_deviation
+
     File pre_adapter_detail_metrics = CollectAggregationMetrics.pre_adapter_detail_metrics
     File pre_adapter_summary_metrics = CollectAggregationMetrics.pre_adapter_summary_metrics
     File quality_distribution_pdf = CollectAggregationMetrics.quality_distribution_pdf
@@ -192,14 +200,28 @@ workflow SingleSampleQc {
     File error_summary_metrics = CollectAggregationMetrics.error_summary_metrics
 
     File selfSM = CheckContamination.selfSM
-    Float contamination = CheckContamination.contamination    
+    Float contamination = CheckContamination.contamination
 
-    File duplication_metrics = CollectDuplicateMetrics.duplication_metrics
+    File duplication_metrics_file = CollectDuplicateMetrics.duplication_metrics_file
+    String percent_duplication = CollectDuplicateMetrics.percent_duplication
 
-    File quality_yield_metrics = CollectQualityYieldMetrics.quality_yield_metrics
+    File quality_yield_metrics = CollectQualityYieldMetrics.metrics_file
+    String q20_bases = CollectQualityYieldMetrics.q20_bases
+    String pf_q20_bases = CollectQualityYieldMetrics.pf_q20_bases
+    String q30_bases = CollectQualityYieldMetrics.q30_bases
+    String pf_q30_bases = CollectQualityYieldMetrics.pf_q30_bases
 
-    File? raw_wgs_metrics = CollectRawWgsMetrics.metrics
-    File? hs_metrics = CollectHsMetrics.metrics
+    File? raw_wgs_metrics = CollectRawWgsMetrics.metrics_file
+    String? mean_coverage = CollectRawWgsMetrics.mean_coverage
+    String? pct_10x = CollectRawWgsMetrics.pct_10x
+    String? pct_20x = CollectRawWgsMetrics.pct_20x
+    String? pct_30x = CollectRawWgsMetrics.pct_30x
+
+    File? hs_metrics = CollectHsMetrics.hs_metrics_file
+    String? mean_target_coverage = CollectHsMetrics.mean_target_coverage
+    String? pct_target_bases_10x = CollectHsMetrics.pct_target_bases_10x
+    String? pct_target_bases_20x = CollectHsMetrics.pct_target_bases_20x
+    String? pct_target_bases_30x = CollectHsMetrics.pct_target_bases_30x
 
     File input_bam_md5 = CalculateChecksum.md5
     String input_bam_md5_hash = CalculateChecksum.md5_hash
