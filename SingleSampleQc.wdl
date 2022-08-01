@@ -42,6 +42,8 @@ workflow SingleSampleQc {
     File contamination_sites_mu
     Boolean is_wgs
     Boolean? is_outlier_data
+
+    File evaluation_thresholds
   }
 
   # Not overridable:
@@ -172,6 +174,19 @@ workflow SingleSampleQc {
       preemptible_tries = preemptible_tries
   }
 
+  call QC.EvaluateMetrics as EvaluateMetrics {
+    input:
+      thresholds = evaluation_thresholds,
+      alignment_summary_metrics = CollectAggregationMetrics.alignment_summary_metrics,
+      duplication_metrics = CollectDuplicateMetrics.duplication_metrics,
+      insert_size_metrics = CollectAggregationMetrics.insert_size_metrics,
+      quality_yield_metrics = CollectQualityYieldMetrics.metrics,
+      contamination_metrics = CheckContamination.metrics,
+      hs_metrics = CollectHsMetrics.hs_metrics,
+      wgs_metrics = CollectRawWgsMetrics.metrics,
+      preemptible_tries = preemptible_tries
+  }
+
   # Outputs that will be retained when execution is complete
   output {
 
@@ -229,5 +244,9 @@ workflow SingleSampleQc {
     File input_bam_idxstats = BamIndexStats.idxstats
     File input_bam_rx_result = RxIdentifier.rx_result
     String input_bam_rx_value = RxIdentifier.rx_value
+
+    File evaluated_metrics_file = EvaluateMetrics.evaluated_metrics_file
+    Map[String, String] evaluated_metrics = EvaluateMetrics.evaluated_metrics
+    String overall_evaluation = EvaluateMetrics.overall_evaluation
   }
 }

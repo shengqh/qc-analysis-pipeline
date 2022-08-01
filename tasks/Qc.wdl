@@ -567,6 +567,7 @@ task CheckContamination {
   output {
     File selfSM = "~{output_prefix}.selfSM"
     Float contamination = read_float(stdout())
+    Map[String, String] metrics = { "CONTAMINATION": read_string(stdout()) }
   }
 }
 
@@ -592,5 +593,96 @@ task CalculateChecksum {
   output {
     File md5 = "~{output_name}.md5"
     String md5_hash = sub(read_string(md5), " .+$", "")
+  }
+}
+
+task EvaluateMetrics {
+  input {
+    File thresholds
+    Map[String, String] alignment_summary_metrics
+    Map[String, String] duplication_metrics
+    Map[String, String] insert_size_metrics
+    Map[String, String] quality_yield_metrics
+    Map[String, String] contamination_metrics
+    Map[String, String]? hs_metrics
+    Map[String, String]? wgs_metrics
+
+    Int preemptible_tries
+  }
+
+  Int disk_size = ceil(size(thresholds, "GiB")) + 20
+
+  String evaluated_metrics_filename = 'evaluated_metrics.tsv'
+  String overall_evaluation_file = 'overall_evaluation'
+
+  command <<<
+    perl -E '
+      use strict; use warnings;
+
+      open(my $threshold_fh, "<", "~{thresholds}");
+      my @thresholds = <$threshold_fh>; chomp @thresholds;
+      close($threshold_fh);
+
+      my @metrics_files = @ARGV;
+      my %metrics;
+
+      for my $f (@metrics_files) {
+        open(my $fh, "<", $f);
+        my @data = <$fh>; chomp @data;
+        close($fh);
+
+        for my $metric (@data) {
+          my ($name, $value) = split("\t", $metric);
+          $metrics{$name} = $value;
+        }
+      }
+
+      my %comparisons = (
+        "="  => sub { return $_[0] == $_[1]; },
+        "<"  => sub { return $_[0] <  $_[1]; },
+        ">"  => sub { return $_[0] >  $_[1]; },
+        "<=" => sub { return $_[0] <= $_[1]; },
+        ">=" => sub { return $_[0] >= $_[1]; },
+      );
+
+      for my $test (@thresholds) {
+        my ($name, $threshold_value, $operator) = split("\t", $test);
+
+        my $comparator = $comparisons{$operator} or die "unknown operator $operator";
+        my $metric_value = $metrics{$name};
+        my $status = "n/a";
+        if ($metric_value) {
+          my $result = $comparator->($metric_value, $threshold_value);
+          $status = $result? "PASS" : "FAIL";
+        }
+        say join("\t", $name, $status);
+      }
+    ' ~{write_map(alignment_summary_metrics)} \
+      ~{write_map(duplication_metrics)} \
+      ~{write_map(insert_size_metrics)} \
+      ~{write_map(quality_yield_metrics)} \
+      ~{write_map(contamination_metrics)} \
+      ~{write_map(select_first([hs_metrics, wgs_metrics]))} \
+      > ~{evaluated_metrics_filename}
+
+    if [[ $(grep 'FAIL' ~{evaluated_metrics_filename}) ]]; then
+      echo 'FAIL' > ~{overall_evaluation_file}
+    elif [[ $(grep 'n/a' ~{evaluated_metrics_filename}) ]]; then
+      echo 'PASS*' > ~{overall_evaluation_file}
+    else
+      echo 'PASS' > ~{overall_evaluation_file}
+    fi
+
+  >>>
+  runtime {
+    preemptible: preemptible_tries
+    memory: "2 GiB"
+    disks: "local-disk " + disk_size + " HDD"
+    docker: "us.gcr.io/gcp-runtimes/ubuntu_16_0_4:latest"
+  }
+  output {
+    File evaluated_metrics_file = "~{evaluated_metrics_filename}"
+    Map[String, String] evaluated_metrics = read_map(evaluated_metrics_filename)
+    String overall_evaluation = read_string(overall_evaluation_file)
   }
 }
