@@ -567,7 +567,7 @@ task CheckContamination {
   output {
     File selfSM = "~{output_prefix}.selfSM"
     Float contamination = read_float(stdout())
-    Map[String, String] metrics = { "CONTAMINATION": read_string(stdout()) }
+    Map[String, String] metrics = { "FREEMIX": read_string(stdout()) }
   }
 }
 
