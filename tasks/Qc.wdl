@@ -29,14 +29,18 @@ task CollectQualityYieldMetrics {
   Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
-  command {
+  String metric_object_file = "~{metrics_filename}.only_metrics"
+
+  command <<<
     java -Xms2000m -jar /usr/picard/picard.jar \
       CollectQualityYieldMetrics \
       INPUT=~{input_bam} \
       REFERENCE_SEQUENCE=~{ref_fasta} \
       OQ=true \
       OUTPUT=~{metrics_filename}
-  }
+
+    grep -v '#' ~{metrics_filename} | grep '.\+' | perl -E 'my ($keys, $values) = <>; chomp $keys; chomp $values; my @k = split("\t", $keys); my @v = split("\t", $values); for(0..$#k) { say join("\t", $k[$_], $v[$_]); }' > "~{metric_object_file}"
+  >>>
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     disks: "local-disk " + disk_size + " HDD"
@@ -44,7 +48,12 @@ task CollectQualityYieldMetrics {
     preemptible: preemptible_tries
   }
   output {
-    File quality_yield_metrics = "~{metrics_filename}"
+    File metrics_file = "~{metrics_filename}"
+    Map[String, String] metrics = read_map(metric_object_file)
+    String q20_bases = metrics["Q20_BASES"]
+    String pf_q20_bases = metrics["PF_Q20_BASES"]
+    String q30_bases = metrics["Q30_BASES"]
+    String pf_q30_bases = metrics["PF_Q30_BASES"]
   }
 }
 
@@ -64,7 +73,10 @@ task CollectAggregationMetrics {
   Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
-  command {
+  String alignment_summary_metric_object_file = "~{base_name}.alignment_summary_metrics.only_metrics"
+  String insert_size_metric_object_file = "~{base_name}.insert_size_metrics.only_metrics"
+
+  command <<<
     # These are optionally generated, but need to exist for Cromwell's sake
     touch ~{base_name}.gc_bias.detail_metrics \
       ~{base_name}.gc_bias.pdf \
@@ -87,7 +99,13 @@ task CollectAggregationMetrics {
       METRIC_ACCUMULATION_LEVEL=null \
       METRIC_ACCUMULATION_LEVEL=SAMPLE \
       METRIC_ACCUMULATION_LEVEL=LIBRARY
-  }
+
+    grep -v '#' '~{base_name}.alignment_summary_metrics' | grep '.\+' | perl -E 'my ($keys, @values) = <>; chomp $keys; chomp for @values; my @k = split("\t", $keys); for my $values (@values[0..2]) { my @v = split("\t", $values); my $category = $v[0]; for(0..($#k-2)) { say join("\t", join("-",$k[$_], $category), $v[$_]); }; }' > ~{alignment_summary_metric_object_file}
+
+    grep -v '#' '~{base_name}.insert_size_metrics' | grep '.\+' | perl -E 'my ($keys, $values) = <>; chomp $keys; chomp $values; my @k = split("\t", $keys); my @v = split("\t", $values); for(0..($#k-2)) { say join("\t", $k[$_], $v[$_]); }' > ~{insert_size_metric_object_file}
+
+
+  >>>
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     memory: "7 GiB"
@@ -95,14 +113,23 @@ task CollectAggregationMetrics {
     preemptible: preemptible_tries
   }
   output {
-    File alignment_summary_metrics = "~{base_name}.alignment_summary_metrics"
+    File alignment_summary_metrics_file = "~{base_name}.alignment_summary_metrics"
+    Map[String, String] alignment_summary_metrics = read_map(alignment_summary_metric_object_file)
+    String pct_chimeras = alignment_summary_metrics["PCT_CHIMERAS-PAIR"]
+    String read1_pf_mismatch_rate = alignment_summary_metrics["PF_MISMATCH_RATE-FIRST_OF_PAIR"]
+    String read2_pf_mismatch_rate = alignment_summary_metrics["PF_MISMATCH_RATE-SECOND_OF_PAIR"]
+
     File bait_bias_detail_metrics = "~{base_name}.bait_bias_detail_metrics"
     File bait_bias_summary_metrics = "~{base_name}.bait_bias_summary_metrics"
     File gc_bias_detail_metrics = "~{base_name}.gc_bias.detail_metrics"
     File gc_bias_pdf = "~{base_name}.gc_bias.pdf"
     File gc_bias_summary_metrics = "~{base_name}.gc_bias.summary_metrics"
     File insert_size_histogram_pdf = "~{base_name}.insert_size_histogram.pdf"
-    File insert_size_metrics = "~{base_name}.insert_size_metrics"
+    File insert_size_metrics_file = "~{base_name}.insert_size_metrics"
+    Map[String, String] insert_size_metrics = read_map(insert_size_metric_object_file)
+    String median_insert_size = insert_size_metrics["MEDIAN_INSERT_SIZE"]
+    String median_absolute_deviation = insert_size_metrics["MEDIAN_ABSOLUTE_DEVIATION"]
+
     File pre_adapter_detail_metrics = "~{base_name}.pre_adapter_detail_metrics"
     File pre_adapter_summary_metrics = "~{base_name}.pre_adapter_summary_metrics"
     File quality_distribution_pdf = "~{base_name}.quality_distribution.pdf"
@@ -172,7 +199,9 @@ task CollectRawWgsMetrics {
   Int memory_size = ceil((if (disk_size < 110) then 5 else 7) * memory_multiplier)
   String java_memory_size = (memory_size - 1) * 1000
 
-  command {
+  String wgs_metric_object_file = '~{metrics_filename}.only_metrics'
+
+  command <<<
     java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectWgsMetrics \
       INPUT=~{input_bam} \
@@ -187,7 +216,10 @@ task CollectRawWgsMetrics {
       READ_LENGTH=~{read_length}
 
     sed -i.original 's/picard.analysis.WgsMetrics/picard.analysis.CollectWgsMetrics\$WgsMetrics/' ~{metrics_filename}
-  }
+
+    grep -v '#' '~{metrics_filename}' | grep '.\+' | perl -E 'my ($keys, $values) = <>; chomp $keys; chomp $values; my @k = split("\t", $keys); my @v = split("\t", $values); for(0..$#k) { say join("\t", $k[$_], $v[$_]); }' > ~{wgs_metric_object_file}
+
+  >>>
   runtime {
     # Using older image due to: https://github.com/broadinstitute/picard/issues/1402
     docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.20.4"
@@ -196,7 +228,12 @@ task CollectRawWgsMetrics {
     disks: "local-disk " + disk_size + " HDD"
   }
   output {
-    File metrics = "~{metrics_filename}"
+    File metrics_file = "~{metrics_filename}"
+    Map[String, String] metrics = read_map(wgs_metric_object_file)
+    String mean_coverage = metrics["MEAN_COVERAGE"]
+    String pct_10x = metrics["PCT_10X"]
+    String pct_20x = metrics["PCT_20X"]
+    String pct_30x = metrics["PCT_30X"]
   }
 }
 
@@ -221,8 +258,10 @@ task CollectHsMetrics {
   Int memory_size = if rounded_memory_size < 7 then 7 else rounded_memory_size
   Int java_memory_size = (memory_size - 1) * 1000
 
+  String hs_metric_object_file = "~{metrics_filename}.only_metrics"
+
   # There are probably more metrics we want to generate with this tool
-  command {
+  command <<<
     java -Xms~{java_memory_size}m -jar /usr/picard/picard.jar \
       CollectHsMetrics \
       INPUT=~{input_bam} \
@@ -233,7 +272,10 @@ task CollectHsMetrics {
       METRIC_ACCUMULATION_LEVEL=null \
       METRIC_ACCUMULATION_LEVEL=SAMPLE \
       OUTPUT=~{metrics_filename}
-  }
+
+grep -v '#' '~{metrics_filename}' | grep '.\+' | perl -E 'my ($keys, $values) = <>; chomp $keys; chomp $values; my @k = split("\t", $keys); my @v = split("\t", $values); for(0..$#k) { say join("\t", $k[$_], $v[$_]); }' > ~{hs_metric_object_file}
+
+  >>>
 
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
@@ -243,7 +285,12 @@ task CollectHsMetrics {
   }
 
   output {
-    File metrics = metrics_filename
+    File hs_metrics_file = metrics_filename
+    Map[String, String] hs_metrics = read_map(hs_metric_object_file)
+    String mean_target_coverage = hs_metrics["MEAN_TARGET_COVERAGE"]
+    String pct_target_bases_10x = hs_metrics["PCT_TARGET_BASES_10X"]
+    String pct_target_bases_20x = hs_metrics["PCT_TARGET_BASES_20X"]
+    String pct_target_bases_30x = hs_metrics["PCT_TARGET_BASES_30X"]
   }
 }
 
@@ -262,14 +309,19 @@ task CollectDuplicateMetrics {
   Float ref_size = size(ref_fasta, "GiB") + size(ref_fasta_index, "GiB") + size(ref_dict, "GiB")
   Int disk_size = ceil(size(input_bam, "GiB") + ref_size) + 20
 
-  command {
+  String duplication_metric_object_file = '~{output_bam_prefix}.duplication_metrics.metrics_only'
+
+  command <<<
     java -Xms5000m -jar /usr/picard/picard.jar \
       CollectDuplicateMetrics \
       METRICS_FILE=~{output_bam_prefix}.duplication_metrics \
       INPUT=~{input_bam} \
       ASSUME_SORTED=true \
       REFERENCE_SEQUENCE=~{ref_fasta}
-  }
+
+    grep -v '#' '~{output_bam_prefix}.duplication_metrics' | grep '.\+' | perl -E 'my ($keys, $values) = <>; chomp $keys; chomp $values; my @k = split("\t", $keys); my @v = split("\t", $values); for(0..$#k) { say join("\t", $k[$_], $v[$_]); }'      > ~{duplication_metric_object_file}
+
+  >>>
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
     memory: "7 GiB"
@@ -277,7 +329,9 @@ task CollectDuplicateMetrics {
     preemptible: preemptible_tries
   }
   output {
-    File duplication_metrics = "~{output_bam_prefix}.duplication_metrics"
+    File duplication_metrics_file = "~{output_bam_prefix}.duplication_metrics"
+    Map[String, String] duplication_metrics = read_map(duplication_metric_object_file)
+    String percent_duplication = duplication_metrics["PERCENT_DUPLICATION"]
   }
 }
 
@@ -513,6 +567,7 @@ task CheckContamination {
   output {
     File selfSM = "~{output_prefix}.selfSM"
     Float contamination = read_float(stdout())
+    Map[String, String] metrics = { "FREEMIX": read_string(stdout()) }
   }
 }
 
@@ -538,5 +593,96 @@ task CalculateChecksum {
   output {
     File md5 = "~{output_name}.md5"
     String md5_hash = sub(read_string(md5), " .+$", "")
+  }
+}
+
+task EvaluateMetrics {
+  input {
+    File thresholds
+    Map[String, String] alignment_summary_metrics
+    Map[String, String] duplication_metrics
+    Map[String, String] insert_size_metrics
+    Map[String, String] quality_yield_metrics
+    Map[String, String] contamination_metrics
+    Map[String, String]? hs_metrics
+    Map[String, String]? wgs_metrics
+
+    Int preemptible_tries
+  }
+
+  Int disk_size = ceil(size(thresholds, "GiB")) + 20
+
+  String evaluated_metrics_filename = 'evaluated_metrics.tsv'
+  String overall_evaluation_file = 'overall_evaluation'
+
+  command <<<
+    perl -E '
+      use strict; use warnings;
+
+      open(my $threshold_fh, "<", "~{thresholds}");
+      my @thresholds = <$threshold_fh>; chomp @thresholds;
+      close($threshold_fh);
+
+      my @metrics_files = @ARGV;
+      my %metrics;
+
+      for my $f (@metrics_files) {
+        open(my $fh, "<", $f);
+        my @data = <$fh>; chomp @data;
+        close($fh);
+
+        for my $metric (@data) {
+          my ($name, $value) = split("\t", $metric);
+          $metrics{$name} = $value;
+        }
+      }
+
+      my %comparisons = (
+        "="  => sub { return $_[0] == $_[1]; },
+        "<"  => sub { return $_[0] <  $_[1]; },
+        ">"  => sub { return $_[0] >  $_[1]; },
+        "<=" => sub { return $_[0] <= $_[1]; },
+        ">=" => sub { return $_[0] >= $_[1]; },
+      );
+
+      for my $test (@thresholds) {
+        my ($name, $threshold_value, $operator) = split("\t", $test);
+
+        my $comparator = $comparisons{$operator} or die "unknown operator $operator";
+        my $metric_value = $metrics{$name};
+        my $status = "n/a";
+        if ($metric_value) {
+          my $result = $comparator->($metric_value, $threshold_value);
+          $status = $result? "PASS" : "FAIL";
+        }
+        say join("\t", $name, $status);
+      }
+    ' ~{write_map(alignment_summary_metrics)} \
+      ~{write_map(duplication_metrics)} \
+      ~{write_map(insert_size_metrics)} \
+      ~{write_map(quality_yield_metrics)} \
+      ~{write_map(contamination_metrics)} \
+      ~{write_map(select_first([hs_metrics, wgs_metrics]))} \
+      > ~{evaluated_metrics_filename}
+
+    if [[ $(grep 'FAIL' ~{evaluated_metrics_filename}) ]]; then
+      echo 'FAIL' > ~{overall_evaluation_file}
+    elif [[ $(grep 'n/a' ~{evaluated_metrics_filename}) ]]; then
+      echo 'PASS*' > ~{overall_evaluation_file}
+    else
+      echo 'PASS' > ~{overall_evaluation_file}
+    fi
+
+  >>>
+  runtime {
+    preemptible: preemptible_tries
+    memory: "2 GiB"
+    disks: "local-disk " + disk_size + " HDD"
+    docker: "us.gcr.io/gcp-runtimes/ubuntu_16_0_4:latest"
+  }
+  output {
+    File evaluated_metrics_file = "~{evaluated_metrics_filename}"
+    Map[String, String] evaluated_metrics = read_map(evaluated_metrics_filename)
+    String overall_evaluation = read_string(overall_evaluation_file)
   }
 }
