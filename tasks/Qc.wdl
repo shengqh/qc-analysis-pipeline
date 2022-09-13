@@ -171,6 +171,7 @@ task ValidateSamFile {
   }
   runtime {
     docker: "us.gcr.io/broad-gotc-prod/picard-cloud:2.21.7"
+    preemptible: preemptible_tries
     memory: "~{memory_size} GiB"
     disks: "local-disk " + disk_size + " HDD"
   }
