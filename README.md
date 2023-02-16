@@ -106,9 +106,10 @@ Data Submitters are responsible for running the WDL on their data to generate th
 3.  Post QC Processing to AnVIL Workspaces
 
 The output from the QC aggregator is a QC summary results TSV file. Data submitters will pass off the QC summary results file to AnVIL ingestion team. The AnVIL team will push the QC summary results to the workspaces, which will contain the QC status including those that fail QC or have no QC. The example below is the QC results table in 1000 Genomes workspace.
+
 Sample QC Results Table
-QC Results.
-QC results in a 1000 Genomes workspace
+
+![QC results in a 1000 Genomes workspace](https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/images/qc-results.png)
 
 ### Additional Resources - Upcoming AnVIL Tools
 
