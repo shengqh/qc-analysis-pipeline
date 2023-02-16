@@ -101,7 +101,9 @@ Data submitters should establish the specific metrics and thresholds for determi
 
 Data Submitters are responsible for running the WDL on their data to generate the QC metrics. AnVIL Data Processing Working Group has created QC aggregator Jupyter notebook. Once QC status criteria have been determined, the thresholds can be modified in the notebook. The criteria is used to assign QC status of pass or fail. If a sample fails multiple times, it is assigned No QC under QC status.
 
-[Video - Walkthrough of WGS QC Processing](https://youtu.be/WLpnoXySuIw)
+Video - Walkthrough of WGS QC Processing
+
+[![Video - Walkthrough of WGS QC Processing](https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/images/AnVILonDockstore_still.png)](https://youtu.be/WLpnoXySuIw "Walkthrough of WGS QC Processing - Click to Watch")
 
 3.  Post QC Processing to AnVIL Workspaces
 
