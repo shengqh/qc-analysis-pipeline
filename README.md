@@ -62,7 +62,7 @@ This script is released under the WDL open source code license (BSD-3) (full lic
 - [VerifyBamID2](https://github.com/Griffan/VerifyBamID)
 - [samtools](https://github.com/samtools/samtools)
 
-## AnVIL Data Submitters
+## AnVIL Data Submission
 
 After submission, you will evaluate genomic data (ex. BAMs or CRAMS) for basic sequence yield and quality control (QC) metrics. These metrics ensure depth and breadth of coverage requirements are met for all data ingested into AnVIL.
 
