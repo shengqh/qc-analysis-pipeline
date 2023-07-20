@@ -8,8 +8,11 @@ For more on the metrics and aggregation of metrics from multiple workflow execut
 
 #### Background
 
-As part of the [AnVIL](https://anvilproject.org/) Data Processing Working Group, a Quality Control (QC) workflow was developed to harmonize and summarize the QC for all WGS and WES sequence data sets ingested and released on the AnVIL.
-The figure below shows the read-level data processing and ingestion process, including decisions regarding reprocessing when data is determined to be incompatible with the Functional Equivalance standard defined in [this](https://www.nature.com/articles/s41467-018-06159-4) Nature Communications publication.
+As part of the [AnVIL](https://anvilproject.org/) Data Processing Working Group, a Quality Control (QC) workflow was developed to harmonize and summarize the QC for all WGS and WES sequence data sets ingested and released on the AnVIL from the [Centers for Common Disease Genomics](https://www.genome.gov/Funded-Programs-Projects/NHGRI-Genome-Sequencing-Program/Centers-for-Common-Disease-Genomics). The QC workflows are a starting point or reference for any data submission to the AnVIL.
+
+The figure below shows the read-level data processing and ingestion process, including decisions regarding reprocessing when data is determined to be incompatible with the Functional Equivalence standard defined in [this](https://www.nature.com/articles/s41467-018-06159-4) Nature Communications publication.
+
+[WDL Analysis Reseach Pipelines](https://broadinstitute.github.io/warp/docs/get-started), from the Broad Institute Data Sciences Platform and collaborators, provides an AnVIL [Whole Genome Analysis Pipeline](https://anvil.terra.bio/#workspaces/warp-pipelines/Whole-Genome-Analysis-Pipeline) Example Workspace to demonstrate a Functional Equivalence pipeline and Joint Genotyping for WGS data.
 
 ![AnVIL Read-Level Data Ingestion and Processing](https://raw.githubusercontent.com/genome/qc-analysis-pipeline/master/images/BGA-84_read-level-data-processing_v1a.png)
 
