@@ -30,6 +30,7 @@ import "tasks/Qc.wdl" as QC
 workflow SingleSampleQc {
   input {
     File input_bam
+    File input_bam_index
     File ref_cache
     File ref_dict
     File ref_fasta
@@ -49,20 +50,11 @@ workflow SingleSampleQc {
   # Not overridable:
   Int read_length = 250
   
-  # Generate a BAM or CRAM index
-  call QC.BuildBamIndex as BuildBamIndex {
-    input:
-      input_bam = input_bam,
-      base_name = base_name,
-      ref_cache = ref_cache,
-      preemptible_tries = preemptible_tries
-  }
-  
   # Collect BAM/CRAM index stats
   call QC.BamIndexStats as BamIndexStats {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       preemptible_tries = preemptible_tries
   }
 
@@ -76,8 +68,8 @@ workflow SingleSampleQc {
   # Validate the BAM or CRAM file
   call QC.ValidateSamFile as ValidateSamFile {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       report_filename = base_name + ".validation_report",
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
@@ -87,18 +79,11 @@ workflow SingleSampleQc {
       preemptible_tries = preemptible_tries
    }
 
-  # generate a md5
-  call QC.CalculateChecksum as CalculateChecksum {
-    input:
-      input_bam = BuildBamIndex.bam,
-      preemptible_tries = preemptible_tries
-  }
-
   # QC the final BAM some more (no such thing as too much QC)
   call QC.CollectAggregationMetrics as CollectAggregationMetrics {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       base_name = base_name,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
@@ -109,8 +94,8 @@ workflow SingleSampleQc {
   # QC the BAM sequence yield
   call QC.CollectQualityYieldMetrics as CollectQualityYieldMetrics {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
@@ -122,8 +107,8 @@ workflow SingleSampleQc {
     # QC the sample raw WGS metrics since this IS WGS data
     call QC.CollectRawWgsMetrics as CollectRawWgsMetrics {
       input:
-        input_bam = BuildBamIndex.bam,
-        input_bam_index = BuildBamIndex.bam_index,
+        input_bam = input_bam,
+        input_bam_index = input_bam_index,
         metrics_filename = base_name + ".raw_wgs_metrics",
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
@@ -137,8 +122,8 @@ workflow SingleSampleQc {
     # QC the sample Hs/WES metrics since this IS NOT WGS
     call QC.CollectHsMetrics as CollectHsMetrics {
       input:
-        input_bam = BuildBamIndex.bam,
-        input_bam_index = BuildBamIndex.bam_index,
+        input_bam = input_bam,
+        input_bam_index = input_bam_index,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
         metrics_filename = base_name + ".hs_metrics",
@@ -151,8 +136,8 @@ workflow SingleSampleQc {
   # Estimate level of cross-sample contamination
   call QC.CheckContamination as CheckContamination {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       contamination_sites_ud = contamination_sites_ud,
       contamination_sites_bed = contamination_sites_bed,
       contamination_sites_mu = contamination_sites_mu,
@@ -165,8 +150,8 @@ workflow SingleSampleQc {
   # Calculate the duplication rate since MarkDuplicates was already performed
   call QC.CollectDuplicateMetrics as CollectDuplicateMetrics {
     input:
-      input_bam = BuildBamIndex.bam,
-      input_bam_index = BuildBamIndex.bam_index,
+      input_bam = input_bam,
+      input_bam_index = input_bam_index,
       output_bam_prefix = base_name,
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
@@ -238,9 +223,6 @@ workflow SingleSampleQc {
     String? pct_target_bases_20x = CollectHsMetrics.pct_target_bases_20x
     String? pct_target_bases_30x = CollectHsMetrics.pct_target_bases_30x
 
-    File input_bam_md5 = CalculateChecksum.md5
-    String input_bam_md5_hash = CalculateChecksum.md5_hash
-    File input_bam_index = BuildBamIndex.bam_index
     File input_bam_idxstats = BamIndexStats.idxstats
     File input_bam_rx_result = RxIdentifier.rx_result
     String input_bam_rx_value = RxIdentifier.rx_value
