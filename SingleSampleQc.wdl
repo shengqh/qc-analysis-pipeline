@@ -43,6 +43,7 @@ workflow SingleSampleQc {
     File contamination_sites_mu
     Boolean is_wgs
     Boolean? is_outlier_data
+    Array[String] ValidateSamFile_ignore = [ "MISSING_TAG_NM", "INVALID_TAG_NM" ]
 
     File evaluation_thresholds
   }
@@ -74,7 +75,7 @@ workflow SingleSampleQc {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
-      ignore = ["MISSING_TAG_NM"],
+      ignore = ValidateSamFile_ignore,
       is_outlier_data = is_outlier_data,
       preemptible_tries = preemptible_tries
    }
