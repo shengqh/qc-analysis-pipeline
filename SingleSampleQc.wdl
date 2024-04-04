@@ -31,7 +31,6 @@ workflow SingleSampleQc {
   input {
     File input_bam
     File input_bam_index
-    File ref_cache
     File ref_dict
     File ref_fasta
     File ref_fasta_index
