@@ -69,6 +69,13 @@ workflow SingleSampleQcMoveResult {
 
   String gcs_output_dir = sub(target_gcp_folder, "/+$", "")
 
+  String  old_raw_wgs_metrics = "~{raw_wgs_metrics}"
+  String  output_raw_wgs_metrics = if old_raw_wgs_metrics == "" then "" else "~{gcs_output_dir}/~{sample_name}/~{basename(old_raw_wgs_metrics)}"
+
+  String  old_hs_metrics = "~{hs_metrics}"
+  String  output_hs_metrics = if old_hs_metrics == "" then "" else "~{gcs_output_dir}/~{sample_name}/~{basename(old_hs_metrics)}"
+
+
   call MoveResult {
     input:
       sample_name = sample_name,
@@ -131,11 +138,8 @@ workflow SingleSampleQcMoveResult {
     String  target_duplication_metrics_file = "~{gcs_output_dir}/~{sample_name}/~{basename(duplication_metrics_file)}"
     String  target_quality_yield_metrics = "~{gcs_output_dir}/~{sample_name}/~{basename(quality_yield_metrics)}"
 
-    String  old_raw_wgs_metrics = "~{raw_wgs_metrics}"
-    String  target_raw_wgs_metrics = if old_raw_wgs_metrics == "" then "" else "~{gcs_output_dir}/~{sample_name}/~{basename(old_raw_wgs_metrics)}"
-
-    String  old_hs_metrics = "~{hs_metrics}"
-    String  target_hs_metrics = if old_hs_metrics == "" then "" else "~{gcs_output_dir}/~{sample_name}/~{basename(old_hs_metrics)}"
+    String  target_raw_wgs_metrics = output_raw_wgs_metrics
+    String  target_hs_metrics = output_hs_metrics
 
     String  target_input_bam_idxstats = "~{gcs_output_dir}/~{sample_name}/~{basename(input_bam_idxstats)}"
     String  target_input_bam_rx_result = "~{gcs_output_dir}/~{sample_name}/~{basename(input_bam_rx_result)}"
