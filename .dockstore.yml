@@ -3,3 +3,7 @@ workflows:
   - name: SingleSampleQc
     subclass: WDL
     primaryDescriptorPath: /SingleSampleQc.wdl
+
+  - name: SingleSampleQcMoveResult
+    subclass: WDL
+    primaryDescriptorPath: /SingleSampleQcMoveResult.wdl
