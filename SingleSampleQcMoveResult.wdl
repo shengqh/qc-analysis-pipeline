@@ -148,39 +148,39 @@ task MoveResult {
     String target_gcp_folder
     String? project_id
 
-    File validation_report 
+    String validation_report 
 
-    File alignment_summary_metrics_file 
+    String alignment_summary_metrics_file 
 
-    File bait_bias_detail_metrics 
-    File bait_bias_summary_metrics 
-    File gc_bias_detail_metrics 
-    File gc_bias_pdf 
-    File gc_bias_summary_metrics 
+    String bait_bias_detail_metrics 
+    String bait_bias_summary_metrics 
+    String gc_bias_detail_metrics 
+    String gc_bias_pdf 
+    String gc_bias_summary_metrics 
 
-    File insert_size_histogram_pdf 
-    File insert_size_metrics_file 
+    String insert_size_histogram_pdf 
+    String insert_size_metrics_file 
 
-    File pre_adapter_detail_metrics 
-    File pre_adapter_summary_metrics 
-    File quality_distribution_pdf 
-    File quality_distribution_metrics 
-    File error_summary_metrics 
+    String pre_adapter_detail_metrics 
+    String pre_adapter_summary_metrics 
+    String quality_distribution_pdf 
+    String quality_distribution_metrics 
+    String error_summary_metrics 
 
-    File selfSM 
+    String selfSM 
 
-    File duplication_metrics_file 
+    String duplication_metrics_file 
 
-    File quality_yield_metrics 
+    String quality_yield_metrics 
 
-    File? raw_wgs_metrics
+    String? raw_wgs_metrics
 
-    File? hs_metrics
+    String? hs_metrics
 
-    File input_bam_idxstats
-    File input_bam_rx_result
+    String input_bam_idxstats
+    String input_bam_rx_result
 
-    File evaluated_metrics_file
+    String evaluated_metrics_file
   }
 
   String gcs_output_dir = sub(target_gcp_folder, "/+$", "")
